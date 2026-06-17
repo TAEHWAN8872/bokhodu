@@ -152,14 +152,10 @@
     </div>
 
     <script>
-        // 데이터 배열에서 광주수완점만 남겼습니다.
+        // ⭐️ 원본 데이터 구조를 100% 유지하고 다른 매장만 삭제했습니다.
         const data = [
             {
                 store: "광주수완점",
-                owner: "정민우",
-                openYear: "2022년",
-                size: "28평",
-                employees: "4명",
                 kpi: { sales: "₩38,500,000", customerValue: "₩13,500", margin: "24%", rating: "4.6 / 5.0" },
                 monthly: {
                     labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
@@ -173,29 +169,24 @@
             }
         ];
 
-        // Global Chart Instances
         let trendChart, expenseChart, pieChart;
-
-        // Number Formatter Helpers
         const currencyFormatter = new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' });
 
         function updateDashboard(storeName) {
             const storeData = data.find(d => d.store === storeName);
             if (!storeData) return;
 
-            // 1. Update KPI Text Cards
             document.getElementById('salesKpi').innerText = storeData.kpi.sales;
             document.getElementById('customerValueKpi').innerText = storeData.kpi.customerValue;
             document.getElementById('marginKpi').innerText = storeData.kpi.margin;
             document.getElementById('ratingKpi').innerText = storeData.kpi.rating;
 
-            // 2. Update Operational Details List
-            document.getElementById('detailOwner').innerText = storeData.owner;
-            document.getElementById('detailOpenYear').innerText = storeData.openYear;
-            document.getElementById('detailSize').innerText = storeData.size;
-            document.getElementById('detailEmployees').innerText = storeData.employees;
+            // 원본 파일 동작 방식대로 빈 칸 유지 처리
+            document.getElementById('detailOwner').innerText = storeData.owner || '-';
+            document.getElementById('detailOpenYear').innerText = storeData.openYear || '-';
+            document.getElementById('detailSize').innerText = storeData.size || '-';
+            document.getElementById('detailEmployees').innerText = storeData.employees || '-';
 
-            // 3. Render/Update Trend Line Chart
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             if (trendChart) trendChart.destroy();
             trendChart = new Chart(ctxTrend, {
@@ -233,7 +224,6 @@
                 }
             });
 
-            // 4. Render/Update Expense Bar Chart
             const ctxExpense = document.getElementById('expenseChart').getContext('2d');
             if (expenseChart) expenseChart.destroy();
             expenseChart = new Chart(ctxExpense, {
@@ -255,7 +245,6 @@
                 }
             });
 
-            // 5. Render/Update Expense Structure Pie Chart
             const ctxPie = document.getElementById('pieChart').getContext('2d');
             if (pieChart) pieChart.destroy();
             pieChart = new Chart(ctxPie, {
@@ -278,16 +267,11 @@
             });
         }
 
-        // Initialize Dashboard with first available store data on load
         document.addEventListener("DOMContentLoaded", () => {
             const selectEl = document.getElementById('storeSelect');
-            
-            // Register Dropdown Change Listener
             selectEl.addEventListener('change', (e) => {
                 updateDashboard(e.target.value);
             });
-
-            // Initial Load trigger
             updateDashboard(selectEl.value);
         });
     </script>
