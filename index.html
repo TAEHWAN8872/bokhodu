@@ -392,6 +392,24 @@
   }
 
   .save-toast.show { opacity: 1; }
+
+  .product-card.saved {
+    border-color: #3b6d11;
+    border-width: 1.5px;
+  }
+
+  .product-card.saved .product-name { color: var(--text-success); }
+  .product-card.saved .product-price { color: var(--text-success); opacity: 0.8; }
+
+  .saved-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-success);
+    margin-left: 5px;
+    vertical-align: middle;
+  }
 </style>
 </head>
 <body>
@@ -431,37 +449,29 @@ const products = {
   mix20: [
     {name:'팥&양 20개입', price:9500},
     {name:'팥&레몬 20개입', price:10000},
-    {name:'팥&딸기 20개입', price:11000},
     {name:'팥&청사과 20개입', price:11000},
     {name:'양&레몬 20개입', price:11000},
-    {name:'양&딸기 20개입', price:12000},
     {name:'양&청사과 20개입', price:12000},
-    {name:'레몬&딸기 20개입', price:12500},
     {name:'레몬&청사과 20개입', price:12500},
   ],
   single20: [
     {name:'팥호두과자 20개입', price:8000},
     {name:'양버터 20개입', price:10000},
     {name:'레몬버터 20개입', price:11000},
-    {name:'딸기버터 20개입', price:13000},
     {name:'청사과 20개입', price:13000},
   ],
   single8: [
     {name:'팥호두과자 8개입', price:4000},
     {name:'양버터 8개입', price:5000},
     {name:'레몬버터 8개입', price:5500},
-    {name:'딸기버터 8개입', price:6500},
     {name:'청사과버터 8개입', price:6500},
   ],
   mix8: [
     {name:'팥&양 8개입', price:4500},
     {name:'팥&레몬 8개입', price:4800},
-    {name:'팥&딸기 8개입', price:5300},
     {name:'팥&청사과 8개입', price:5300},
     {name:'양&레몬 8개입', price:5300},
-    {name:'양&딸기 8개입', price:5800},
     {name:'양&청사과 8개입', price:5800},
-    {name:'레몬&딸기 8개입', price:6100},
     {name:'레몬&청사과 8개입', price:6100},
   ]
 };
@@ -476,10 +486,10 @@ const costFields = [
   { key:'box',          label:'상자',       type:'preset', defaultVal:153120,hint:'÷ 400',           formula:(v)=> v/400 },
   { key:'cross',        label:'십자간지',   type:'preset', defaultVal:165000,hint:'÷ 1,200',         formula:(v)=> v/1200 },
   { key:'paper',        label:'유산지',     type:'fixed',  fixed:5 },
-  { key:'wrap',         label:'화지',       type:'fixed',  fixed:1.1 },
-  { key:'butter_dono',  label:'도노버터',   type:'preset', defaultVal:147400,hint:'÷ 2,700',         formula:(v)=> v/2700 },
-  { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600',           formula:(v)=> v/600 },
-  { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700',         formula:(v)=> v/2700 },
+  { key:'wrap',         label:'화지',       type:'fixed',  fixed:22 },
+  { key:'butter_dono',  label:'도노버터',   type:'preset', defaultVal:147400,hint:'÷ 2,700 ×20',     formula:(v)=> v/2700*20 },
+  { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600 ×20',       formula:(v)=> v/600*20 },
+  { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700 ×20',     formula:(v)=> v/2700*20 },
   { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
   { key:'milk', label:'우유', type:'preset', defaultVal:2100, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
   { key:'egg', label:'계란', type:'preset', defaultVal:8500, hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
@@ -506,6 +516,24 @@ function fmtTimes20(contrib) {
 }
 
 const savedCosts = {};
+
+// 메뉴명으로 버터 구성 결정
+function getButterConfig(name) {
+  const hasDono  = name.includes('양');
+  const hasApple = name.includes('청사과');
+  const hasLemon = name.includes('레몬');
+  const isMix    = name.includes('&');
+
+  const multi = isMix ? 10 : 20;
+  const result = {};
+
+  if (hasDono)  result['butter_dono']  = multi;
+  if (hasApple) result['butter_apple'] = multi;
+  if (hasLemon) result['butter_lemon'] = multi;
+
+  return result; // { key: multiplier }
+}
+
 let selectedEl = null;
 
 function renderGrid(id, list) {
@@ -569,9 +597,13 @@ function togglePreset(key, name, price) {
 
 function renderCalc(name, price) {
   const saved = savedCosts[name] || {};
-  const esc = name.replace(/'/g,"\\'");
+  const esc = name.replace(/'/g,"\'");
+  const butterCfg = getButterConfig(name);
+  const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
 
   const rows = costFields.map(f => {
+    // 버터 항목: 해당 메뉴에 필요없으면 숨김
+    if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
     if (f.type === 'fixed') {
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
@@ -601,7 +633,7 @@ function renderCalc(name, price) {
         : '';
 
       return `<div class="cost-item">
-        <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
+        <label class="cost-label">${f.label} <span class="cost-hint">${butterKeys.includes(f.key) ? (f.key==='butter_apple' ? '÷ 600 ×'+butterCfg[f.key] : '÷ 2,700 ×'+butterCfg[f.key]) : f.hint}</span></label>
         <div class="input-row">
           <div class="preset-wrap" style="flex:1;min-width:0;">
             <div id="pd-${f.key}" class="cost-preset-display" onclick="togglePreset('${f.key}','${esc}',${price})"
@@ -621,7 +653,7 @@ function renderCalc(name, price) {
 
     const val = saved[f.key] !== undefined ? saved[f.key] : '';
     return `<div class="cost-item">
-      <label class="cost-label">${f.label} <span class="cost-hint">${f.hint || ''}</span></label>
+      <label class="cost-label">${f.label} <span class="cost-hint">${butterKeys.includes(f.key) ? (f.key==='butter_apple' ? '÷ 600 ×'+butterCfg[f.key] : '÷ 2,700 ×'+butterCfg[f.key]) : (f.hint || '')}</span></label>
       <div class="input-row">
         <input class="cost-input" type="number" id="ci-${f.key}" placeholder="0"
           value="${val}" oninput="updateResult('${esc}',${price})" />
@@ -658,15 +690,29 @@ function updateResult(name, price) {
   const eggs = getFieldVal({ type:'eggs' });
   let total = 0;
   const vals = {};
+  const butterCfg = getButterConfig(name);
+  const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
 
   costFields.forEach(f => {
+    // 버터: 해당 메뉴에 없으면 스킵
+    if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return;
+
     const v = getFieldVal(f);
     vals[f.key] = v;
 
     if (f.type === 'fixed') { total += f.fixed; return; }
     if (f.type === 'eggs')  { return; }
 
-    const contrib = f.formula(v, eggs);
+    // 버터 multiplier 동적 적용
+    let contrib;
+    if (butterKeys.includes(f.key)) {
+      const mult = butterCfg[f.key];
+      if (f.key === 'butter_dono')  contrib = v / 2700 * mult;
+      else if (f.key === 'butter_apple') contrib = v / 600 * mult;
+      else if (f.key === 'butter_lemon') contrib = v / 2700 * mult;
+    } else {
+      contrib = f.formula(v, eggs);
+    }
     total += contrib;
 
     const cvEl = document.getElementById('cv-' + f.key);
@@ -714,6 +760,7 @@ function saveData(name) {
     const all = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
     all[name] = savedCosts[name] || {};
     localStorage.setItem('bokhodu_costs', JSON.stringify(all));
+    refreshAllGrids();
     showToast('저장되었습니다');
   } catch(e) { showToast('저장 실패'); }
 }
@@ -727,6 +774,7 @@ function resetData(name, price) {
     localStorage.setItem('bokhodu_costs', JSON.stringify(all));
   } catch(e) {}
   renderCalc(name, price);
+  refreshAllGrids();
   showToast('초기화되었습니다');
 }
 
@@ -735,6 +783,13 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function refreshAllGrids() {
+  renderGrid('grid-mix-20',    products.mix20);
+  renderGrid('grid-single-20', products.single20);
+  renderGrid('grid-single-8',  products.single8);
+  renderGrid('grid-mix-8',     products.mix8);
 }
 </script>
 </body>
