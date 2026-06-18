@@ -308,6 +308,26 @@
     background: var(--bg-secondary);
     width: 100%;
   }
+
+  /* 기본값 있는 항목: 숫자만 표시, 클릭 시 편집 */
+  .cost-preset-display {
+    border: 0.5px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg);
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+
+  .cost-preset-display:hover {
+    border-color: var(--border-info);
+    background: var(--bg-info);
+    color: var(--text-info);
+  }
 </style>
 </head>
 <body>
@@ -381,21 +401,37 @@ const products = {
   ]
 };
 
+// defaultVal: 기본으로 채워지는 값 (수정 가능)
+// type:'preset' = 기본값 있는 입력칸 (클릭하면 수정 가능, 평소엔 숫자만 표시)
+// type:'fixed'  = 완전 고정 (유산지·화지·스티커·비닐)
 const costFields = [
-  { key:'premix',       label:'프리믹스',   type:'input', hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
-  { key:'redbean',      label:'팥앙금',     type:'input', hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
-  { key:'eggs',         label:'생산알수',   type:'eggs',  hint:'원가 미적용',     formula:()=>0 },
-  { key:'box',          label:'상자',       type:'input', hint:'÷ 400',           formula:(v)=> v/400 },
-  { key:'cross',        label:'십자간지',   type:'input', hint:'÷ 1,200',         formula:(v)=> v/1200 },
-  { key:'paper',        label:'유산지',     type:'fixed', fixed:5 },
-  { key:'wrap',         label:'화지',       type:'fixed', fixed:1.1 },
-  { key:'butter_dono',  label:'도노버터',   type:'input', hint:'÷ 2,700',         formula:(v)=> v/2700 },
-  { key:'butter_apple', label:'청사과버터', type:'input', hint:'÷ 600',           formula:(v)=> v/600 },
-  { key:'butter_lemon', label:'레몬버터',   type:'input', hint:'÷ 2,700',         formula:(v)=> v/2700 },
-  { key:'walnut',       label:'벌크호두',   type:'input', hint:'÷ 4 ÷ 생산알수', formula:(v,e)=> e>0 ? v/4/e : 0 },
-  { key:'sticker',      label:'스티커',     type:'fixed', fixed:7 },
-  { key:'vinyl',        label:'비닐봉투',   type:'fixed', fixed:67 },
+  { key:'premix',       label:'프리믹스',   type:'preset', defaultVal:25300, hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
+  { key:'redbean',      label:'팥앙금',     type:'preset', defaultVal:71060, hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
+  { key:'eggs',         label:'생산알수',   type:'eggs',                     hint:'원가 미적용',     formula:()=>0 },
+  { key:'box',          label:'상자',       type:'preset', defaultVal:153120,hint:'÷ 400',           formula:(v)=> v/400 },
+  { key:'cross',        label:'십자간지',   type:'preset', defaultVal:165000,hint:'÷ 1,200',         formula:(v)=> v/1200 },
+  { key:'paper',        label:'유산지',     type:'fixed',  fixed:5 },
+  { key:'wrap',         label:'화지',       type:'fixed',  fixed:1.1 },
+  { key:'butter_dono',  label:'도노버터',   type:'preset', defaultVal:147400,hint:'÷ 2,700',         formula:(v)=> v/2700 },
+  { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600',           formula:(v)=> v/600 },
+  { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700',         formula:(v)=> v/2700 },
+  { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수', formula:(v,e)=> e>0 ? v/4/e : 0 },
+  { key:'sticker',      label:'스티커',     type:'fixed',  fixed:7 },
+  { key:'vinyl',        label:'비닐봉투',   type:'fixed',  fixed:67 },
 ];
+
+// 천단위 콤마 포맷
+function fmt(n) {
+  if (n === null || n === undefined || n === '') return '';
+  return Number(n).toLocaleString('ko-KR');
+}
+
+// 계산값 포맷 (소수점 불필요한 0 제거)
+function fmtCalc(n) {
+  if (!n || n === 0) return '-';
+  const s = n.toFixed(2).replace(/\.?0+$/, '');
+  return s + '원';
+}
 
 const savedCosts = {};
 let selectedEl = null;
@@ -433,27 +469,83 @@ function selectProduct(el, name, price) {
   renderCalc(name, price);
 }
 
+// preset 항목: 표시모드(클릭 가능한 숫자값) ↔ 편집모드(input) 토글
+function togglePreset(key, name, price) {
+  const display = document.getElementById('pd-' + key);
+  const input   = document.getElementById('pi-' + key);
+  if (!display || !input) return;
+  const isEditing = input.style.display !== 'none';
+  if (isEditing) {
+    // 편집 → 표시
+    const raw = parseFloat(input.value) || 0;
+    display.textContent = fmt(raw);
+    display.style.display = '';
+    input.style.display = 'none';
+    updateResult(name, price);
+  } else {
+    // 표시 → 편집
+    display.style.display = 'none';
+    input.style.display = '';
+    input.focus();
+    input.select();
+  }
+}
+
 function renderCalc(name, price) {
   const saved = savedCosts[name] || {};
   const esc = name.replace(/'/g,"\\'");
 
   const rows = costFields.map(f => {
+    // 완전 고정값 (유산지, 화지, 스티커, 비닐)
     if (f.type === 'fixed') {
       return `<div class="cost-item">
-        <label class="cost-label">${f.label} <span class="cost-hint">고정값</span></label>
+        <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
         <div class="input-row">
-          <div class="cost-fixed">${f.fixed}원 고정</div>
-          <span class="cost-calc-val">${f.fixed}원</span>
+          <div class="cost-fixed">${fmt(f.fixed)}</div>
+          <span class="cost-calc-val">${fmt(f.fixed)}원</span>
         </div>
       </div>`;
     }
-    const extraClass = f.type === 'eggs' ? ' eggs-input' : '';
+
+    // 생산알수
+    if (f.type === 'eggs') {
+      const val = saved[f.key] !== undefined ? saved[f.key] : '';
+      return `<div class="cost-item">
+        <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
+        <div class="input-row">
+          <input class="cost-input eggs-input" type="number" id="ci-eggs" placeholder="0"
+            value="${val}" oninput="updateResult('${esc}',${price})" />
+          <span class="cost-calc-val" id="cv-eggs">-</span>
+        </div>
+      </div>`;
+    }
+
+    // 기본값 있는 preset 항목 (클릭하면 수정)
+    if (f.type === 'preset') {
+      const initVal = saved[f.key] !== undefined ? saved[f.key] : f.defaultVal;
+      return `<div class="cost-item">
+        <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
+        <div class="input-row">
+          <div class="preset-wrap" style="flex:1;min-width:0;">
+            <div id="pd-${f.key}" class="cost-preset-display" onclick="togglePreset('${f.key}','${esc}',${price})"
+              title="클릭하여 수정">${fmt(initVal)}</div>
+            <input id="pi-${f.key}" class="cost-input" type="number" style="display:none"
+              value="${initVal}"
+              onblur="togglePreset('${f.key}','${esc}',${price})"
+              oninput="updateResult('${esc}',${price})" />
+          </div>
+          <span class="cost-calc-val" id="cv-${f.key}">-</span>
+        </div>
+      </div>`;
+    }
+
+    // 일반 입력 (청사과버터, 레몬버터)
+    const val = saved[f.key] !== undefined ? saved[f.key] : '';
     return `<div class="cost-item">
-      <label class="cost-label">${f.label}${f.hint ? ' <span class="cost-hint">'+f.hint+'</span>' : ''}</label>
+      <label class="cost-label">${f.label} <span class="cost-hint">${f.hint || ''}</span></label>
       <div class="input-row">
-        <input class="cost-input${extraClass}" type="number" id="ci-${f.key}" placeholder="0"
-          value="${saved[f.key] !== undefined ? saved[f.key] : ''}"
-          oninput="updateResult('${esc}',${price})" />
+        <input class="cost-input" type="number" id="ci-${f.key}" placeholder="0"
+          value="${val}" oninput="updateResult('${esc}',${price})" />
         <span class="cost-calc-val" id="cv-${f.key}">-</span>
       </div>
     </div>`;
@@ -472,36 +564,37 @@ function renderCalc(name, price) {
   updateResult(name, price);
 }
 
+function getFieldVal(f) {
+  if (f.type === 'fixed') return f.fixed;
+  if (f.type === 'eggs')   return parseFloat(document.getElementById('ci-eggs')?.value) || 0;
+  if (f.type === 'preset') return parseFloat(document.getElementById('pi-' + f.key)?.value) || 0;
+  return parseFloat(document.getElementById('ci-' + f.key)?.value) || 0;
+}
+
 function updateResult(name, price) {
-  const eggs = parseFloat(document.getElementById('ci-eggs') ? document.getElementById('ci-eggs').value : 0) || 0;
+  const eggs = getFieldVal({ type:'eggs' });
   let total = 0;
   const vals = {};
 
   costFields.forEach(f => {
-    if (f.type === 'fixed') {
-      total += f.fixed;
-      vals[f.key] = f.fixed;
-      return;
-    }
-    const v = parseFloat(document.getElementById('ci-' + f.key).value) || 0;
+    const v = getFieldVal(f);
     vals[f.key] = v;
+
+    if (f.type === 'fixed') { total += f.fixed; return; }
+    if (f.type === 'eggs')  { return; }
+
     const contrib = f.formula(v, eggs);
     total += contrib;
+
     const cvEl = document.getElementById('cv-' + f.key);
-    if (cvEl) {
-      if (f.type === 'eggs') {
-        cvEl.textContent = '-';
-      } else {
-        cvEl.textContent = contrib > 0 ? contrib.toFixed(2).replace(/\.?0+$/, '') + '원' : '-';
-      }
-    }
+    if (cvEl) cvEl.textContent = fmtCalc(contrib);
   });
 
   savedCosts[name] = vals;
 
   const margin = price - total;
-  const pct = total > 0 ? ((margin / price) * 100).toFixed(1) : null;
-  const cls = margin >= 0 ? 'positive' : 'negative';
+  const pct    = total > 0 ? ((margin / price) * 100).toFixed(1) : null;
+  const cls    = margin >= 0 ? 'positive' : 'negative';
 
   document.getElementById('result-bar').innerHTML =
     `<div class="result-card">
@@ -510,7 +603,7 @@ function updateResult(name, price) {
     </div>
     <div class="result-card">
       <div class="result-label">마진</div>
-      <div class="result-value ${cls}">${(price - total).toFixed(1)}원</div>
+      <div class="result-value ${cls}">${margin.toFixed(1)}원</div>
       <div class="result-pct ${cls}">${pct !== null ? pct + '%' : '-'}</div>
     </div>
     <div class="result-card">
