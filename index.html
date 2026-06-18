@@ -82,7 +82,6 @@
     margin: 0 auto;
   }
 
-  /* ── Header ── */
   header {
     margin-bottom: 28px;
     padding-bottom: 20px;
@@ -112,7 +111,6 @@
     line-height: 1.5;
   }
 
-  /* ── Tabs ── */
   .tab-bar {
     display: flex;
     gap: 0;
@@ -143,7 +141,6 @@
     box-shadow: 0 1px 3px rgba(37,99,235,0.25);
   }
 
-  /* ── Section title ── */
   .section-title {
     font-size: 10px;
     font-weight: 600;
@@ -156,7 +153,6 @@
 
   .section-title:first-child { margin-top: 0; }
 
-  /* ── Product grid ── */
   .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
@@ -227,7 +223,6 @@
     margin-bottom: 1px;
   }
 
-  /* ── Placeholder ── */
   .placeholder {
     color: var(--ink-3);
     font-size: 14px;
@@ -239,7 +234,6 @@
     border-radius: var(--r-lg);
   }
 
-  /* ── Calc panel ── */
   .calc-panel {
     margin-top: 20px;
     background: var(--bg-card);
@@ -276,7 +270,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ── Cost grid ── */
   .cost-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -386,7 +379,6 @@
     color: var(--accent);
   }
 
-  /* ── Result bar ── */
   .result-bar {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -442,7 +434,6 @@
   .result-pct.positive { color: var(--green); }
   .result-pct.negative { color: var(--red); }
 
-  /* ── Action bar ── */
   .action-bar {
     display: flex;
     gap: 8px;
@@ -487,7 +478,6 @@
     color: var(--ink);
   }
 
-  /* ── Toast ── */
   .save-toast {
     position: fixed;
     bottom: 28px;
@@ -511,7 +501,6 @@
     transform: translateX(-50%) translateY(0);
   }
 
-  /* ── Confirm Modal ── */
   .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -645,7 +634,6 @@
   </div>
 </div>
 
-<!-- Confirm Modal -->
 <div class="modal-backdrop" id="confirm-modal">
   <div class="modal-box">
     <div class="modal-icon">🗑️</div>
@@ -694,22 +682,31 @@ const products = {
 
 const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
 
+// ── costFields ──
+// 변경사항:
+//   유산지: fixed 22 → 22 (원래 5였는데 실제로는 22로 수정)
+//   화지: fixed 22 → 24
+//   스티커: fixed 7 → 17
+//   반죽버터: 고정 1623원 추가 (전 제품 공통)
+//   레몬버터 defaultVal: 178200
+//   청사과버터 defaultVal: 114950
 const costFields = [
-  { key:'premix',       label:'프리믹스',   type:'preset', defaultVal:25300, hint:'÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'redbean',      label:'팥앙금',     type:'preset', defaultVal:71060, hint:'÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'eggs',         label:'생산알수',   type:'eggs',                     hint:'원가 미적용',     formula:()=>0 },
-  { key:'box',          label:'상자',       type:'preset', defaultVal:153120,hint:'÷ 400',           formula:(v)=> v/400 },
-  { key:'cross',        label:'십자간지',   type:'preset', defaultVal:165000,hint:'÷ 1,200',         formula:(v)=> v/1200 },
-  { key:'paper',        label:'유산지',     type:'fixed',  fixed:5 },
-  { key:'wrap',         label:'화지',       type:'fixed',  fixed:22 },
-  { key:'butter_dono',  label:'도노버터',   type:'preset', defaultVal:147400,hint:'÷ 2,700 ×20',     formula:(v)=> v/2700*20 },
-  { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600 ×20',       formula:(v)=> v/600*20 },
-  { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700 ×20',     formula:(v)=> v/2700*20 },
-  { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
-  { key:'milk', label:'우유', type:'preset', defaultVal:2100, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'egg', label:'계란', type:'preset', defaultVal:8500, hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
-  { key:'sticker',      label:'스티커',     type:'fixed',  fixed:7 },
-  { key:'vinyl',        label:'비닐봉투',   type:'fixed',  fixed:67 },
+  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용',          formula:()=>0 },
+  { key:'box',           label:'상자',       type:'preset', defaultVal:153120, hint:'÷ 400',               formula:(v)=> v/400 },
+  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:165000, hint:'÷ 1,200',             formula:(v)=> v/1200 },
+  { key:'paper',         label:'유산지',     type:'fixed',  fixed:22 },
+  { key:'wrap',          label:'화지',       type:'fixed',  fixed:24 },
+  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',         formula:(v)=> v/2700*20 },
+  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',           formula:(v)=> v/600*20 },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,700 ×20',         formula:(v)=> v/2700*20 },
+  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
+  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
+  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17 },
+  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:67 },
 ];
 
 function fmt(n) {
@@ -729,17 +726,14 @@ function fmtTimes20(contrib) {
   return (Math.round(val * 100) / 100).toLocaleString('ko-KR', {maximumFractionDigits:2}) + '원';
 }
 
-// ── savedCosts: localStorage에서 불러오기 ──
 const savedCosts = {};
 try {
   const raw = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
   Object.assign(savedCosts, raw);
 } catch(e) {}
 
-// 현재 계산기에 입력 중인 임시값 (저장 전까지 savedCosts에 반영 안 됨)
 const currentVals = {};
 
-// ── renderGrid: savedCosts 기준으로 .saved 클래스 적용 ──
 function renderGrid(id, list) {
   const el = document.getElementById(id);
   el.innerHTML = list.map((p, i) => {
@@ -822,6 +816,7 @@ function renderCalc(name, price) {
 
   const rows = costFields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
+
     if (f.type === 'fixed') {
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
@@ -849,8 +844,16 @@ function renderCalc(name, price) {
       const profitRow = profit20Keys.has(f.key)
         ? `<div class="cost-profit-val" id="cp-${f.key}"></div>`
         : '';
+      // 버터 힌트 동적 생성
+      let hintText = f.hint;
+      if (butterKeys.includes(f.key)) {
+        if (f.key === 'butter_apple') hintText = '÷ 600 ×' + butterCfg[f.key];
+        else hintText = '÷ 2,700 ×' + butterCfg[f.key];
+      } else {
+        hintText = f.hint.replace('×20', '×' + qtyMult);
+      }
       return `<div class="cost-item">
-        <label class="cost-label">${f.label} <span class="cost-hint">${butterKeys.includes(f.key) ? (f.key==='butter_apple' ? '÷ 600 ×'+butterCfg[f.key] : '÷ 2,700 ×'+butterCfg[f.key]) : f.hint.replace('×20','×'+qtyMult)}</span></label>
+        <label class="cost-label">${f.label} <span class="cost-hint">${hintText}</span></label>
         <div class="input-row">
           <div class="preset-wrap" style="flex:1;min-width:0;">
             <div id="pd-${f.key}" class="cost-preset-display" onclick="togglePreset('${f.key}','${esc}',${price})"
@@ -869,8 +872,14 @@ function renderCalc(name, price) {
     }
 
     const val = saved[f.key] !== undefined ? saved[f.key] : '';
+    let hintText2 = '';
+    if (butterKeys.includes(f.key)) {
+      hintText2 = f.key === 'butter_apple' ? '÷ 600 ×' + butterCfg[f.key] : '÷ 2,700 ×' + butterCfg[f.key];
+    } else {
+      hintText2 = f.hint || '';
+    }
     return `<div class="cost-item">
-      <label class="cost-label">${f.label} <span class="cost-hint">${butterKeys.includes(f.key) ? (f.key==='butter_apple' ? '÷ 600 ×'+butterCfg[f.key] : '÷ 2,700 ×'+butterCfg[f.key]) : (f.hint || '')}</span></label>
+      <label class="cost-label">${f.label} <span class="cost-hint">${hintText2}</span></label>
       <div class="input-row">
         <input class="cost-input" type="number" id="ci-${f.key}" placeholder="0"
           value="${val}" oninput="updateResult('${esc}',${price})" />
@@ -927,12 +936,13 @@ function updateResult(name, price) {
       if (f.key === 'butter_dono')       contrib = v / 2700 * mult;
       else if (f.key === 'butter_apple') contrib = v / 600  * mult;
       else if (f.key === 'butter_lemon') contrib = v / 2700 * mult;
-    } else if (['premix','redbean','walnut','milk','egg'].includes(f.key)) {
-      if (f.key === 'premix')       contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'redbean') contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'walnut')  contrib = eggs > 0 ? v / 4 / eggs * qtyMult : 0;
-      else if (f.key === 'milk')    contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'egg')     contrib = eggs > 0 ? v / 30 * 110 / eggs * qtyMult : 0;
+    } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key)) {
+      if (f.key === 'premix')              contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'redbean')        contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'walnut')         contrib = eggs > 0 ? v / 4 / eggs * qtyMult : 0;
+      else if (f.key === 'milk')           contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'egg')            contrib = eggs > 0 ? v / 30 * 110 / eggs * qtyMult : 0;
+      else if (f.key === 'dough_butter')   contrib = eggs > 0 ? v / eggs * qtyMult : 0;
     } else {
       contrib = f.formula(v, eggs);
     }
@@ -955,22 +965,23 @@ function updateResult(name, price) {
     }
   });
 
-  // 입력값은 currentVals에만 임시 보관 — savedCosts는 저장 버튼 클릭 시에만 변경
   currentVals[name] = vals;
 
   const margin = price - total;
-  const pct    = total > 0 ? ((margin / price) * 100).toFixed(1) : null;
-  const cls    = margin >= 0 ? 'positive' : 'negative';
+  const marginPct = price > 0 ? ((margin / price) * 100).toFixed(1) : null;
+  const costPct   = price > 0 ? ((total  / price) * 100).toFixed(1) : null;
+  const cls = margin >= 0 ? 'positive' : 'negative';
 
   document.getElementById('result-bar').innerHTML =
     `<div class="result-card">
       <div class="result-label">총 원가</div>
       <div class="result-value">${total.toFixed(1)}원</div>
+      <div class="result-pct">${costPct !== null ? costPct + '%' : '-'}</div>
     </div>
     <div class="result-card">
       <div class="result-label">마진</div>
       <div class="result-value ${cls}">${margin.toFixed(1)}원</div>
-      <div class="result-pct ${cls}">${pct !== null ? pct + '%' : '-'}</div>
+      <div class="result-pct ${cls}">${marginPct !== null ? marginPct + '%' : '-'}</div>
     </div>
     <div class="result-card">
       <div class="result-label">판매가</div>
@@ -979,7 +990,6 @@ function updateResult(name, price) {
 }
 
 function saveData(name) {
-  // 현재 입력값을 savedCosts에 확정
   if (currentVals[name]) savedCosts[name] = currentVals[name];
   try {
     localStorage.setItem('bokhodu_costs', JSON.stringify(savedCosts));
@@ -988,7 +998,6 @@ function saveData(name) {
   } catch(e) { showToast('저장 실패'); }
 }
 
-// ── 커스텀 confirm 모달 ──
 let _pendingResetCallback = null;
 
 function confirmReset(name, price) {
@@ -1003,10 +1012,7 @@ function confirmReset(name, price) {
   };
 
   document.getElementById('modal-confirm-btn').onclick = _pendingResetCallback;
-
   modal.classList.add('show');
-
-  // 백드롭 클릭 시 닫기
   modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 }
 
@@ -1015,7 +1021,6 @@ function closeModal() {
   _pendingResetCallback = null;
 }
 
-// ESC 키로 모달 닫기
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
