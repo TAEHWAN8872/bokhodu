@@ -299,6 +299,17 @@
     font-weight: 500;
   }
 
+  /* ×20 이익 표시 (원가 절감 수치) */
+  .cost-profit-val {
+    font-size: 11px;
+    white-space: nowrap;
+    font-weight: 500;
+    margin-top: 3px;
+    text-align: right;
+  }
+  .cost-profit-val.positive { color: var(--text-success); }
+  .cost-profit-val.negative { color: var(--text-danger); }
+
   .cost-fixed {
     border: 0.5px solid var(--border);
     border-radius: var(--radius-md);
@@ -309,7 +320,6 @@
     width: 100%;
   }
 
-  /* 기본값 있는 항목: 숫자만 표시, 클릭 시 편집 */
   .cost-preset-display {
     border: 0.5px solid var(--border-hover);
     border-radius: var(--radius-md);
@@ -401,12 +411,12 @@ const products = {
   ]
 };
 
-// defaultVal: 기본으로 채워지는 값 (수정 가능)
-// type:'preset' = 기본값 있는 입력칸 (클릭하면 수정 가능, 평소엔 숫자만 표시)
-// type:'fixed'  = 완전 고정 (유산지·화지·스티커·비닐)
+// ×20 후 원가 차감 수치를 표시할 항목 키
+const profit20Keys = new Set(['premix', 'redbean', 'walnut']);
+
 const costFields = [
-  { key:'premix',       label:'프리믹스',   type:'preset', defaultVal:25300, hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
-  { key:'redbean',      label:'팥앙금',     type:'preset', defaultVal:71060, hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
+  { key:'premix',       label:'프리믹스',   type:'preset', defaultVal:25300, hint:'÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'redbean',      label:'팥앙금',     type:'preset', defaultVal:71060, hint:'÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/e*20 : 0 },
   { key:'eggs',         label:'생산알수',   type:'eggs',                     hint:'원가 미적용',     formula:()=>0 },
   { key:'box',          label:'상자',       type:'preset', defaultVal:153120,hint:'÷ 400',           formula:(v)=> v/400 },
   { key:'cross',        label:'십자간지',   type:'preset', defaultVal:165000,hint:'÷ 1,200',         formula:(v)=> v/1200 },
@@ -415,22 +425,27 @@ const costFields = [
   { key:'butter_dono',  label:'도노버터',   type:'preset', defaultVal:147400,hint:'÷ 2,700',         formula:(v)=> v/2700 },
   { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600',           formula:(v)=> v/600 },
   { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700',         formula:(v)=> v/2700 },
-  { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수', formula:(v,e)=> e>0 ? v/4/e : 0 },
+  { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
   { key:'sticker',      label:'스티커',     type:'fixed',  fixed:7 },
   { key:'vinyl',        label:'비닐봉투',   type:'fixed',  fixed:67 },
 ];
 
-// 천단위 콤마 포맷
 function fmt(n) {
   if (n === null || n === undefined || n === '') return '';
   return Number(n).toLocaleString('ko-KR');
 }
 
-// 계산값 포맷 (소수점 불필요한 0 제거)
 function fmtCalc(n) {
   if (!n || n === 0) return '-';
   const s = n.toFixed(2).replace(/\.?0+$/, '');
   return s + '원';
+}
+
+// ×20 값 포맷
+function fmtTimes20(contrib) {
+  if (!contrib || contrib === 0) return null;
+  const val = contrib * 20;
+  return (Math.round(val * 100) / 100).toLocaleString('ko-KR', {maximumFractionDigits:2}) + '원';
 }
 
 const savedCosts = {};
@@ -469,21 +484,18 @@ function selectProduct(el, name, price) {
   renderCalc(name, price);
 }
 
-// preset 항목: 표시모드(클릭 가능한 숫자값) ↔ 편집모드(input) 토글
 function togglePreset(key, name, price) {
   const display = document.getElementById('pd-' + key);
   const input   = document.getElementById('pi-' + key);
   if (!display || !input) return;
   const isEditing = input.style.display !== 'none';
   if (isEditing) {
-    // 편집 → 표시
     const raw = parseFloat(input.value) || 0;
     display.textContent = fmt(raw);
     display.style.display = '';
     input.style.display = 'none';
     updateResult(name, price);
   } else {
-    // 표시 → 편집
     display.style.display = 'none';
     input.style.display = '';
     input.focus();
@@ -496,7 +508,6 @@ function renderCalc(name, price) {
   const esc = name.replace(/'/g,"\\'");
 
   const rows = costFields.map(f => {
-    // 완전 고정값 (유산지, 화지, 스티커, 비닐)
     if (f.type === 'fixed') {
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
@@ -507,7 +518,6 @@ function renderCalc(name, price) {
       </div>`;
     }
 
-    // 생산알수
     if (f.type === 'eggs') {
       const val = saved[f.key] !== undefined ? saved[f.key] : '';
       return `<div class="cost-item">
@@ -520,9 +530,12 @@ function renderCalc(name, price) {
       </div>`;
     }
 
-    // 기본값 있는 preset 항목 (클릭하면 수정)
     if (f.type === 'preset') {
       const initVal = saved[f.key] !== undefined ? saved[f.key] : f.defaultVal;
+      const profitRow = profit20Keys.has(f.key)
+        ? `<div class="cost-profit-val" id="cp-${f.key}"></div>`
+        : '';
+
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
         <div class="input-row">
@@ -534,12 +547,14 @@ function renderCalc(name, price) {
               onblur="togglePreset('${f.key}','${esc}',${price})"
               oninput="updateResult('${esc}',${price})" />
           </div>
-          <span class="cost-calc-val" id="cv-${f.key}">-</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+            <span class="cost-calc-val" id="cv-${f.key}">-</span>
+            ${profitRow}
+          </div>
         </div>
       </div>`;
     }
 
-    // 일반 입력 (청사과버터, 레몬버터)
     const val = saved[f.key] !== undefined ? saved[f.key] : '';
     return `<div class="cost-item">
       <label class="cost-label">${f.label} <span class="cost-hint">${f.hint || ''}</span></label>
@@ -588,6 +603,20 @@ function updateResult(name, price) {
 
     const cvEl = document.getElementById('cv-' + f.key);
     if (cvEl) cvEl.textContent = fmtCalc(contrib);
+
+    // ×20 값 표시 (프리믹스, 팥앙금, 벌크호두)
+    if (profit20Keys.has(f.key)) {
+      const cpEl = document.getElementById('cp-' + f.key);
+      if (cpEl) {
+        const t20 = fmtTimes20(contrib);
+        if (t20) {
+          cpEl.textContent = '×20 = ' + t20;
+          cpEl.className = 'cost-profit-val positive';
+        } else {
+          cpEl.textContent = '';
+        }
+      }
+    }
   });
 
   savedCosts[name] = vals;
