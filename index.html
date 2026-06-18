@@ -701,7 +701,7 @@ const costFields = [
   { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
   { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',         formula:(v)=> v/2700*20 },
   { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',           formula:(v)=> v/600*20 },
-  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,700 ×20',         formula:(v)=> v/2700*20 },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×20',         formula:(v)=> v/2300*20 },
   { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
   { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
   { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
@@ -816,6 +816,7 @@ function renderCalc(name, price) {
 
   const rows = costFields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
+    if (f.key === 'dough_butter' && name.includes('청사과')) return '';
 
     if (f.type === 'fixed') {
       return `<div class="cost-item">
@@ -935,7 +936,7 @@ function updateResult(name, price) {
       const mult = butterCfg[f.key];
       if (f.key === 'butter_dono')       contrib = v / 2700 * mult;
       else if (f.key === 'butter_apple') contrib = v / 600  * mult;
-      else if (f.key === 'butter_lemon') contrib = v / 2700 * mult;
+      else if (f.key === 'butter_lemon') contrib = v / 2300 * mult;
     } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key)) {
       if (f.key === 'premix')              contrib = eggs > 0 ? v / eggs * qtyMult : 0;
       else if (f.key === 'redbean')        contrib = eggs > 0 ? v / eggs * qtyMult : 0;
