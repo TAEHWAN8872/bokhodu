@@ -301,11 +301,7 @@
 
   /* ×20 이익 표시 (원가 절감 수치) */
   .cost-profit-val {
-    font-size: 11px;
-    white-space: nowrap;
-    font-weight: 500;
-    margin-top: 3px;
-    text-align: right;
+    display: none;
   }
   .cost-profit-val.positive { color: var(--text-success); }
   .cost-profit-val.negative { color: var(--text-danger); }
@@ -338,6 +334,64 @@
     background: var(--bg-info);
     color: var(--text-info);
   }
+
+  .action-bar {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .btn-save {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-info);
+    background: var(--bg-info);
+    color: var(--text-info);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: opacity 0.15s;
+  }
+
+  .btn-save:hover { opacity: 0.8; }
+
+  .btn-reset {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-hover);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: opacity 0.15s;
+  }
+
+  .btn-reset:hover { opacity: 0.7; }
+
+  .save-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: var(--bg);
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 999;
+  }
+
+  .save-toast.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -370,6 +424,7 @@
     <div class="placeholder">제품을 클릭하면 원가 계산기가 열립니다</div>
   </div>
 </div>
+<div class="save-toast" id="toast"></div>
 
 <script>
 const products = {
@@ -412,7 +467,7 @@ const products = {
 };
 
 // ×20 후 원가 차감 수치를 표시할 항목 키
-const profit20Keys = new Set(['premix', 'redbean', 'walnut']);
+const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
 
 const costFields = [
   { key:'premix',       label:'프리믹스',   type:'preset', defaultVal:25300, hint:'÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/e*20 : 0 },
@@ -426,6 +481,8 @@ const costFields = [
   { key:'butter_apple', label:'청사과버터', type:'input',                    hint:'÷ 600',           formula:(v)=> v/600 },
   { key:'butter_lemon', label:'레몬버터',   type:'input',                    hint:'÷ 2,700',         formula:(v)=> v/2700 },
   { key:'walnut',       label:'벌크호두',   type:'preset', defaultVal:125000,hint:'÷ 4 ÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
+  { key:'milk', label:'우유', type:'preset', defaultVal:2100, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'egg', label:'계란', type:'preset', defaultVal:8500, hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
   { key:'sticker',      label:'스티커',     type:'fixed',  fixed:7 },
   { key:'vinyl',        label:'비닐봉투',   type:'fixed',  fixed:67 },
 ];
@@ -460,6 +517,13 @@ function renderGrid(id, list) {
     </div>`
   ).join('');
 }
+
+
+// localStorage에서 저장된 값 불러오기
+try {
+  const saved = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
+  Object.assign(savedCosts, saved);
+} catch(e) {}
 
 renderGrid('grid-mix-20',    products.mix20);
 renderGrid('grid-single-20', products.single20);
@@ -574,6 +638,10 @@ function renderCalc(name, price) {
       </div>
       <div class="cost-grid">${rows}</div>
       <div class="result-bar" id="result-bar"></div>
+      <div class="action-bar">
+        <button class="btn-save" onclick="saveData('${esc}')">💾 저장</button>
+        <button class="btn-reset" onclick="resetData('${esc}',${price})">🔄 초기화</button>
+      </div>
     </div>`;
 
   updateResult(name, price);
@@ -639,6 +707,34 @@ function updateResult(name, price) {
       <div class="result-label">판매가</div>
       <div class="result-value">${price.toLocaleString()}원</div>
     </div>`;
+}
+
+function saveData(name) {
+  try {
+    const all = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
+    all[name] = savedCosts[name] || {};
+    localStorage.setItem('bokhodu_costs', JSON.stringify(all));
+    showToast('저장되었습니다');
+  } catch(e) { showToast('저장 실패'); }
+}
+
+function resetData(name, price) {
+  if (!confirm('입력값을 초기화할까요?')) return;
+  delete savedCosts[name];
+  try {
+    const all = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
+    delete all[name];
+    localStorage.setItem('bokhodu_costs', JSON.stringify(all));
+  } catch(e) {}
+  renderCalc(name, price);
+  showToast('초기화되었습니다');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
 </script>
 </body>
