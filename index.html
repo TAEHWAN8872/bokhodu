@@ -271,6 +271,43 @@
   }
 
   .hidden { display: none; }
+
+  .cost-hint {
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .input-row .cost-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cost-calc-val {
+    font-size: 12px;
+    color: var(--text-info);
+    white-space: nowrap;
+    min-width: 44px;
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .cost-fixed {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    width: 100%;
+  }
 </style>
 </head>
 <body>
@@ -403,8 +440,11 @@ function renderCalc(name, price) {
   const rows = costFields.map(f => {
     if (f.type === 'fixed') {
       return `<div class="cost-item">
-        <label class="cost-label">${f.label} <span class="cost-hint">고정 ${f.fixed}원</span></label>
-        <div class="cost-fixed">${f.fixed}원</div>
+        <label class="cost-label">${f.label} <span class="cost-hint">고정값</span></label>
+        <div class="input-row">
+          <div class="cost-fixed">${f.fixed}원 고정</div>
+          <span class="cost-calc-val">${f.fixed}원</span>
+        </div>
       </div>`;
     }
     const extraClass = f.type === 'eggs' ? ' eggs-input' : '';
