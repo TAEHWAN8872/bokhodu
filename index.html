@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>복호두 원가 계산기</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-info: #e6f1fb;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-info: #185fa5;
+    --text-success: #3b6d11;
+    --text-danger: #a32d2d;
+    --border: rgba(0,0,0,0.15);
+    --border-hover: rgba(0,0,0,0.30);
+    --border-info: #185fa5;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c;
+      --bg-secondary: #2a2a28;
+      --bg-info: #0c447c;
+      --text-primary: #f0efeb;
+      --text-secondary: #9a9994;
+      --text-info: #85b7eb;
+      --text-success: #97c459;
+      --text-danger: #f09595;
+      --border: rgba(255,255,255,0.15);
+      --border-hover: rgba(255,255,255,0.30);
+      --border-info: #85b7eb;
+    }
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 24px;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tab-btn {
+    padding: 9px 20px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-hover);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+
+  .tab-btn.active {
+    background: var(--bg-info);
+    color: var(--text-info);
+    border-color: var(--border-info);
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+
+  .section-title:first-child { margin-top: 0; }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .product-card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .product-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-secondary);
+  }
+
+  .product-card.selected {
+    border: 1.5px solid var(--border-info);
+    background: var(--bg-info);
+  }
+
+  .product-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    line-height: 1.4;
+  }
+
+  .product-card.selected .product-name { color: var(--text-info); }
+
+  .product-price {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .product-card.selected .product-price { color: var(--text-info); opacity: 0.8; }
+
+  .calc-panel {
+    margin-top: 20px;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+
+  .calc-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .calc-product-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .calc-product-price {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .cost-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 420px) {
+    .cost-grid { grid-template-columns: 1fr; }
+  }
+
+  .cost-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .cost-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .cost-input {
+    border: 0.5px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg);
+    width: 100%;
+    font-family: var(--font);
+    transition: border-color 0.15s;
+  }
+
+  .cost-input:focus {
+    outline: none;
+    border-color: var(--border-info);
+  }
+
+  .result-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .result-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    text-align: center;
+  }
+
+  .result-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+
+  .result-value {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .result-value.positive { color: var(--text-success); }
+  .result-value.negative { color: var(--text-danger); }
+
+  .result-pct {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+
+  .result-pct.positive { color: var(--text-success); }
+  .result-pct.negative { color: var(--text-danger); }
+
+  .placeholder {
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding: 2.5rem 0;
+    text-align: center;
+    margin-top: 20px;
+    background: var(--bg);
+    border: 0.5px dashed var(--border-hover);
+    border-radius: var(--radius-lg);
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>복호두 원가 계산기</h1>
+    <p>제품을 선택하고 원가 항목을 입력하면 마진을 자동으로 계산합니다</p>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('20')">20개입 호두과자</button>
+    <button class="tab-btn" onclick="switchTab('8')">답례품 (8개입)</button>
+  </div>
+
+  <div id="panel-20">
+    <p class="section-title">믹스 조합 (2종)</p>
+    <div class="product-grid" id="grid-mix-20"></div>
+    <p class="section-title">단일 맛 (1종)</p>
+    <div class="product-grid" id="grid-single-20"></div>
+  </div>
+
+  <div id="panel-8" class="hidden">
+    <p class="section-title">단일 맛 (1종)</p>
+    <div class="product-grid" id="grid-single-8"></div>
+    <p class="section-title">믹스 조합 (2종)</p>
+    <div class="product-grid" id="grid-mix-8"></div>
+  </div>
+
+  <div id="calc-area">
+    <div class="placeholder">제품을 클릭하면 원가 계산기가 열립니다</div>
+  </div>
+</div>
+
+<script>
+const products = {
+  mix20: [
+    {name:'팥&양 20개입', price:9500},
+    {name:'팥&레몬 20개입', price:10000},
+    {name:'팥&딸기 20개입', price:11000},
+    {name:'팥&청사과 20개입', price:11000},
+    {name:'양&레몬 20개입', price:11000},
+    {name:'양&딸기 20개입', price:12000},
+    {name:'양&청사과 20개입', price:12000},
+    {name:'레몬&딸기 20개입', price:12500},
+    {name:'레몬&청사과 20개입', price:12500},
+  ],
+  single20: [
+    {name:'팥호두과자 20개입', price:8000},
+    {name:'양버터 20개입', price:10000},
+    {name:'레몬버터 20개입', price:11000},
+    {name:'딸기버터 20개입', price:13000},
+    {name:'청사과 20개입', price:13000},
+  ],
+  single8: [
+    {name:'팥호두과자 8개입', price:4000},
+    {name:'양버터 8개입', price:5000},
+    {name:'레몬버터 8개입', price:5500},
+    {name:'딸기버터 8개입', price:6500},
+    {name:'청사과버터 8개입', price:6500},
+  ],
+  mix8: [
+    {name:'팥&양 8개입', price:4500},
+    {name:'팥&레몬 8개입', price:4800},
+    {name:'팥&딸기 8개입', price:5300},
+    {name:'팥&청사과 8개입', price:5300},
+    {name:'양&레몬 8개입', price:5300},
+    {name:'양&딸기 8개입', price:5800},
+    {name:'양&청사과 8개입', price:5800},
+    {name:'레몬&딸기 8개입', price:6100},
+    {name:'레몬&청사과 8개입', price:6100},
+  ]
+};
+
+const costFields = [
+  { key:'premix',       label:'프리믹스',   type:'input', hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
+  { key:'redbean',      label:'팥앙금',     type:'input', hint:'÷ 생산알수',      formula:(v,e)=> e>0 ? v/e : 0 },
+  { key:'eggs',         label:'생산알수',   type:'eggs',  hint:'원가 미적용',     formula:()=>0 },
+  { key:'box',          label:'상자',       type:'input', hint:'÷ 400',           formula:(v)=> v/400 },
+  { key:'cross',        label:'십자간지',   type:'input', hint:'÷ 1,200',         formula:(v)=> v/1200 },
+  { key:'paper',        label:'유산지',     type:'fixed', fixed:5 },
+  { key:'wrap',         label:'화지',       type:'fixed', fixed:1.1 },
+  { key:'butter_dono',  label:'도노버터',   type:'input', hint:'÷ 2,700',         formula:(v)=> v/2700 },
+  { key:'butter_apple', label:'청사과버터', type:'input', hint:'÷ 600',           formula:(v)=> v/600 },
+  { key:'butter_lemon', label:'레몬버터',   type:'input', hint:'÷ 2,700',         formula:(v)=> v/2700 },
+  { key:'walnut',       label:'벌크호두',   type:'input', hint:'÷ 4 ÷ 생산알수', formula:(v,e)=> e>0 ? v/4/e : 0 },
+  { key:'sticker',      label:'스티커',     type:'fixed', fixed:7 },
+  { key:'vinyl',        label:'비닐봉투',   type:'fixed', fixed:67 },
+];
+
+const savedCosts = {};
+let selectedEl = null;
+
+function renderGrid(id, list) {
+  const el = document.getElementById(id);
+  el.innerHTML = list.map((p, i) =>
+    `<div class="product-card" id="card-${id}-${i}" onclick="selectProduct(this,'${p.name.replace(/'/g,"\\'")}',${p.price})">
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">${p.price.toLocaleString()}원</div>
+    </div>`
+  ).join('');
+}
+
+renderGrid('grid-mix-20',    products.mix20);
+renderGrid('grid-single-20', products.single20);
+renderGrid('grid-single-8',  products.single8);
+renderGrid('grid-mix-8',     products.mix8);
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) =>
+    b.classList.toggle('active', (t === '20' && i === 0) || (t === '8' && i === 1))
+  );
+  document.getElementById('panel-20').classList.toggle('hidden', t !== '20');
+  document.getElementById('panel-8').classList.toggle('hidden', t !== '8');
+  if (selectedEl) { selectedEl.classList.remove('selected'); selectedEl = null; }
+  document.getElementById('calc-area').innerHTML =
+    '<div class="placeholder">제품을 클릭하면 원가 계산기가 열립니다</div>';
+}
+
+function selectProduct(el, name, price) {
+  if (selectedEl) selectedEl.classList.remove('selected');
+  el.classList.add('selected');
+  selectedEl = el;
+  renderCalc(name, price);
+}
+
+function renderCalc(name, price) {
+  const saved = savedCosts[name] || {};
+  const esc = name.replace(/'/g,"\\'");
+
+  const rows = costFields.map(f => {
+    if (f.type === 'fixed') {
+      return `<div class="cost-item">
+        <label class="cost-label">${f.label} <span class="cost-hint">고정 ${f.fixed}원</span></label>
+        <div class="cost-fixed">${f.fixed}원</div>
+      </div>`;
+    }
+    const extraClass = f.type === 'eggs' ? ' eggs-input' : '';
+    return `<div class="cost-item">
+      <label class="cost-label">${f.label}${f.hint ? ' <span class="cost-hint">'+f.hint+'</span>' : ''}</label>
+      <div class="input-row">
+        <input class="cost-input${extraClass}" type="number" id="ci-${f.key}" placeholder="0"
+          value="${saved[f.key] !== undefined ? saved[f.key] : ''}"
+          oninput="updateResult('${esc}',${price})" />
+        <span class="cost-calc-val" id="cv-${f.key}">-</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('calc-area').innerHTML =
+    `<div class="calc-panel">
+      <div class="calc-header">
+        <span class="calc-product-name">${name}</span>
+        <span class="calc-product-price">판매가 ${price.toLocaleString()}원</span>
+      </div>
+      <div class="cost-grid">${rows}</div>
+      <div class="result-bar" id="result-bar"></div>
+    </div>`;
+
+  updateResult(name, price);
+}
+
+function updateResult(name, price) {
+  const eggs = parseFloat(document.getElementById('ci-eggs') ? document.getElementById('ci-eggs').value : 0) || 0;
+  let total = 0;
+  const vals = {};
+
+  costFields.forEach(f => {
+    if (f.type === 'fixed') {
+      total += f.fixed;
+      vals[f.key] = f.fixed;
+      return;
+    }
+    const v = parseFloat(document.getElementById('ci-' + f.key).value) || 0;
+    vals[f.key] = v;
+    const contrib = f.formula(v, eggs);
+    total += contrib;
+    const cvEl = document.getElementById('cv-' + f.key);
+    if (cvEl) {
+      if (f.type === 'eggs') {
+        cvEl.textContent = '-';
+      } else {
+        cvEl.textContent = contrib > 0 ? contrib.toFixed(2).replace(/\.?0+$/, '') + '원' : '-';
+      }
+    }
+  });
+
+  savedCosts[name] = vals;
+
+  const margin = price - total;
+  const pct = total > 0 ? ((margin / price) * 100).toFixed(1) : null;
+  const cls = margin >= 0 ? 'positive' : 'negative';
+
+  document.getElementById('result-bar').innerHTML =
+    `<div class="result-card">
+      <div class="result-label">총 원가</div>
+      <div class="result-value">${total.toFixed(1)}원</div>
+    </div>
+    <div class="result-card">
+      <div class="result-label">마진</div>
+      <div class="result-value ${cls}">${(price - total).toFixed(1)}원</div>
+      <div class="result-pct ${cls}">${pct !== null ? pct + '%' : '-'}</div>
+    </div>
+    <div class="result-card">
+      <div class="result-label">판매가</div>
+      <div class="result-value">${price.toLocaleString()}원</div>
+    </div>`;
+}
+</script>
+</body>
+</html>
