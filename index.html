@@ -28,6 +28,12 @@
     --green-border: #86efac;
 
     --red:          #dc2626;
+    --red-bg:       #fff1f1;
+    --red-border:   #fca5a5;
+
+    --orange:       #ea580c;
+    --orange-bg:    #fff7ed;
+    --orange-border:#fdba74;
 
     --border:       #e5e5e3;
     --border-strong:#d0d0cd;
@@ -62,6 +68,12 @@
       --green-border: #166534;
 
       --red:          #f87171;
+      --red-bg:       #2d1010;
+      --red-border:   #991b1b;
+
+      --orange:       #fb923c;
+      --orange-bg:    #2d1a0a;
+      --orange-border:#9a3412;
 
       --border:       #2a2a28;
       --border-strong:#3a3a38;
@@ -83,10 +95,17 @@
   }
 
   header {
-    margin-bottom: 28px;
+    margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
   }
+
+  .header-left {}
 
   .header-eyebrow {
     font-size: 11px;
@@ -111,6 +130,123 @@
     line-height: 1.5;
   }
 
+  /* ── 전체 초기화 버튼 ── */
+  .btn-reset-all {
+    padding: 9px 14px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--red-border);
+    background: var(--red-bg);
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: opacity 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .btn-reset-all:hover { opacity: 0.78; }
+
+  /* ── 생산알수 글로벌 패널 ── */
+  .global-eggs-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--orange-border);
+    border-radius: var(--r-lg);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .global-eggs-left {
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .global-eggs-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .global-eggs-label svg {
+    width: 14px; height: 14px; flex-shrink: 0;
+  }
+
+  .global-eggs-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  .global-eggs-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .global-eggs-input {
+    border: 1.5px solid var(--orange-border);
+    border-radius: var(--r-sm);
+    padding: 9px 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--orange-bg);
+    width: 110px;
+    font-family: var(--font);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    transition: border-color 0.12s, box-shadow 0.12s;
+  }
+
+  .global-eggs-input:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.12);
+    background: var(--bg-card);
+  }
+
+  .global-eggs-input::placeholder { color: var(--ink-3); font-weight: 400; }
+
+  .btn-apply-all {
+    padding: 9px 16px;
+    border-radius: var(--r-sm);
+    border: none;
+    background: var(--orange);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: opacity 0.12s;
+    white-space: nowrap;
+  }
+  .btn-apply-all:hover { opacity: 0.85; }
+
+  .eggs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--orange);
+    background: var(--orange-bg);
+    border: 1px solid var(--orange-border);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+
+  /* ── 탭 ── */
   .tab-bar {
     display: flex;
     gap: 0;
@@ -270,6 +406,37 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* ── 계산기 내부 생산알수 표시줄 ── */
+  .calc-eggs-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--orange-bg);
+    border-bottom: 1px solid var(--orange-border);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .calc-eggs-bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .calc-eggs-bar-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    font-variant-numeric: tabular-nums;
+  }
+  .calc-eggs-bar-hint {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-weight: 400;
+  }
+
   .cost-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -404,7 +571,6 @@
     background: var(--border);
   }
 
-  /* 마진 카드 강조 */
   .result-card:nth-child(2) {
     background: var(--bg-sub);
     padding: 24px 16px;
@@ -421,7 +587,6 @@
     margin-bottom: 6px;
   }
 
-  /* 마진 카드 라벨 */
   .result-card:nth-child(2) .result-label {
     font-size: 11px;
     letter-spacing: 0.08em;
@@ -437,7 +602,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* 마진 카드 숫자 1.5배 */
   .result-card:nth-child(2) .result-value {
     font-size: 30px;
     letter-spacing: -0.03em;
@@ -453,7 +617,6 @@
     font-weight: 500;
   }
 
-  /* 마진 카드 퍼센트 */
   .result-card:nth-child(2) .result-pct {
     font-size: 14px;
     font-weight: 600;
@@ -589,6 +752,7 @@
     color: var(--ink-2);
     line-height: 1.55;
     margin-bottom: 20px;
+    white-space: pre-line;
   }
 
   .modal-btns {
@@ -634,10 +798,37 @@
 <body>
 <div class="container">
   <header>
-    <div class="header-eyebrow">원가 계산기</div>
-    <h1>복호두</h1>
-    <p>제품을 선택하고 원가 항목을 입력하면 마진을 자동으로 계산합니다</p>
+    <div class="header-left">
+      <div class="header-eyebrow">원가 계산기</div>
+      <h1>복호두</h1>
+      <p>제품을 선택하고 원가 항목을 입력하면 마진을 자동으로 계산합니다</p>
+    </div>
+    <button class="btn-reset-all" onclick="confirmResetAll()">전체 초기화</button>
   </header>
+
+  <!-- ── 생산알수 글로벌 입력 패널 ── -->
+  <div class="global-eggs-panel">
+    <div class="global-eggs-left">
+      <div class="global-eggs-label">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <ellipse cx="8" cy="9" rx="4.5" ry="6"/>
+        </svg>
+        생산알수 (전 메뉴 공통)
+      </div>
+      <div class="global-eggs-desc">오늘 생산한 총 알수를 입력하면<br>모든 호두과자 메뉴 원가에 동시 반영됩니다</div>
+    </div>
+    <div class="global-eggs-right">
+      <input
+        class="global-eggs-input"
+        type="number"
+        id="global-eggs"
+        placeholder="알수 입력"
+        min="1"
+        oninput="onGlobalEggsChange()"
+      />
+      <button class="btn-apply-all" onclick="applyEggsToAll()">전 메뉴 적용</button>
+    </div>
+  </div>
 
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('20')">20개입 호두과자</button>
@@ -669,6 +860,7 @@
   </div>
 </div>
 
+<!-- 확인 모달 -->
 <div class="modal-backdrop" id="confirm-modal">
   <div class="modal-box">
     <div class="modal-icon">🗑️</div>
@@ -723,6 +915,12 @@ const products = {
   ]
 };
 
+// 전체 메뉴 목록 (생산알수 일괄 저장 대상: 호두과자만)
+const allWalnutProducts = [
+  ...products.mix20, ...products.single20,
+  ...products.single8, ...products.mix8
+];
+
 // ── 20개입 전용 원가 필드 ──
 const costFields20 = [
   { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
@@ -744,7 +942,6 @@ const costFields20 = [
 ];
 
 // ── 답례품(8개입) 전용 원가 필드 ──
-// 유산지 없음 / 화지 10원 고정 / 상자 149160÷600 / 십자간지 20460÷600 / 비닐봉투 44원 고정
 const costFields8 = [
   { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
   { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
@@ -765,7 +962,7 @@ const costFields8 = [
 
 const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
 
-// ── 사이드 메뉴 원가 필드 (제품별로 다름) ──
+// ── 사이드 메뉴 원가 필드 ──
 const costFieldsSide = {
   '콜드브루 아메리카노': [
     { key:'coldbrew',  label:'콜드브루 원액', type:'preset', defaultVal:10780, hint:'÷ 12',      formula:(v)=> v/12 },
@@ -814,14 +1011,122 @@ function fmtTimes20(contrib) {
   return (Math.round(val * 100) / 100).toLocaleString('ko-KR', {maximumFractionDigits:2}) + '원';
 }
 
+// ── localStorage ──
 const savedCosts = {};
 try {
   const raw = JSON.parse(localStorage.getItem('bokhodu_costs') || '{}');
   Object.assign(savedCosts, raw);
 } catch(e) {}
 
+// 전역 생산알수 — localStorage에서 복원
+let globalEggs = 0;
+try {
+  const ge = localStorage.getItem('bokhodu_global_eggs');
+  if (ge) globalEggs = parseInt(ge) || 0;
+} catch(e) {}
+
 const currentVals = {};
 
+// ── 생산알수 입력값 복원 ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (globalEggs > 0) {
+    document.getElementById('global-eggs').value = globalEggs;
+  }
+});
+
+// 생산알수 변경 시 전역 변수 업데이트 + 열린 계산기 즉시 반영
+function onGlobalEggsChange() {
+  const v = parseInt(document.getElementById('global-eggs').value) || 0;
+  globalEggs = v;
+  try { localStorage.setItem('bokhodu_global_eggs', v); } catch(e) {}
+  // 현재 열려있는 계산기 패널에 즉시 반영
+  if (currentOpenName && currentOpenPrice) {
+    syncEggsInputInCalc(v);
+    updateResult(currentOpenName, currentOpenPrice);
+  }
+}
+
+// 전 메뉴 일괄 저장
+function applyEggsToAll() {
+  const v = parseInt(document.getElementById('global-eggs').value) || 0;
+  if (!v || v <= 0) {
+    showToast('생산알수를 먼저 입력해주세요');
+    return;
+  }
+  globalEggs = v;
+  try { localStorage.setItem('bokhodu_global_eggs', v); } catch(e) {}
+
+  // 전체 호두과자 품목에 eggs 값 저장
+  let count = 0;
+  allWalnutProducts.forEach(p => {
+    if (!savedCosts[p.name]) savedCosts[p.name] = {};
+    savedCosts[p.name].eggs = v;
+    count++;
+  });
+  try { localStorage.setItem('bokhodu_costs', JSON.stringify(savedCosts)); } catch(e) {}
+
+  refreshAllGrids();
+
+  // 현재 열린 계산기에도 반영
+  if (currentOpenName && currentOpenPrice) {
+    syncEggsInputInCalc(v);
+    updateResult(currentOpenName, currentOpenPrice);
+  }
+
+  showToast(`생산알수 ${v.toLocaleString()}알 — 전 메뉴(${count}종) 적용 완료 ✓`);
+}
+
+// 열린 계산기의 eggs 인풋 동기화
+function syncEggsInputInCalc(v) {
+  const eggsEl = document.getElementById('ci-eggs');
+  if (eggsEl) {
+    eggsEl.value = v > 0 ? v : '';
+  }
+  const eggsBadge = document.getElementById('calc-eggs-value');
+  if (eggsBadge) eggsBadge.textContent = v > 0 ? v.toLocaleString() + '알' : '미입력';
+}
+
+// ── 전체 초기화 ──
+function confirmResetAll() {
+  const modal = document.getElementById('confirm-modal');
+  document.getElementById('modal-title').textContent = '전체 초기화';
+  document.getElementById('modal-desc').textContent =
+    '저장된 모든 메뉴의 원가 데이터와\n생산알수를 초기화합니다.\n이 작업은 되돌릴 수 없습니다.';
+
+  _pendingResetCallback = () => {
+    closeModal();
+    doResetAll();
+  };
+  document.getElementById('modal-confirm-btn').onclick = _pendingResetCallback;
+  modal.classList.add('show');
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+}
+
+function doResetAll() {
+  // 모든 저장 데이터 삭제
+  for (const k in savedCosts) delete savedCosts[k];
+  globalEggs = 0;
+  try {
+    localStorage.removeItem('bokhodu_costs');
+    localStorage.removeItem('bokhodu_global_eggs');
+  } catch(e) {}
+
+  // 생산알수 인풋 초기화
+  document.getElementById('global-eggs').value = '';
+
+  refreshAllGrids();
+
+  // 열려있는 계산기 다시 렌더
+  if (currentOpenName && currentOpenPrice) {
+    renderCalc(currentOpenName, currentOpenPrice);
+    // selectedEl 복원
+    if (selectedEl) selectedEl.classList.add('selected');
+  }
+
+  showToast('전체 초기화 완료');
+}
+
+// ── 그리드 렌더 ──
 function renderGrid(id, list) {
   const el = document.getElementById(id);
   el.innerHTML = list.map((p, i) => {
@@ -837,6 +1142,8 @@ function renderGrid(id, list) {
 }
 
 let selectedEl = null;
+let currentOpenName = null;
+let currentOpenPrice = null;
 
 renderGrid('grid-mix-20',    products.mix20);
 renderGrid('grid-single-20', products.single20);
@@ -852,6 +1159,8 @@ function switchTab(t) {
   document.getElementById('panel-8').classList.toggle('hidden', t !== '8');
   document.getElementById('panel-side').classList.toggle('hidden', t !== 'side');
   if (selectedEl) { selectedEl.classList.remove('selected'); selectedEl = null; }
+  currentOpenName = null;
+  currentOpenPrice = null;
   document.getElementById('calc-area').innerHTML =
     '<div class="placeholder">제품을 클릭하면 원가 계산기가 열립니다</div>';
 }
@@ -897,21 +1206,25 @@ function getButterConfig(name) {
 }
 
 function renderCalc(name, price) {
+  currentOpenName  = name;
+  currentOpenPrice = price;
+
   const saved = savedCosts[name] || {};
   const esc = name.replace(/'/g,"\'");
   const butterCfg = getButterConfig(name);
   const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
   const is8 = name.includes('8개입');
-  const qtyMult = is8 ? 8 : 20;
-
-  // 제품 유형에 맞는 필드셋 선택
+  const isSideMenu = name in costFieldsSide;
   const fields = getCostFields(name);
+
+  // 생산알수: saved > global > 0
+  const eggsVal = saved.eggs !== undefined ? saved.eggs
+                : (globalEggs > 0 ? globalEggs : '');
 
   const rows = fields.length === 0
     ? `<div class="cost-item" style="grid-column:1/-1;color:var(--ink-3);font-size:13px;text-align:center;padding:24px 16px;">원가 항목이 없습니다</div>`
     : fields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
-
 
     if (f.type === 'fixed') {
       return `<div class="cost-item">
@@ -923,13 +1236,14 @@ function renderCalc(name, price) {
       </div>`;
     }
 
+    // 생산알수 필드 — 글로벌 연동 인풋
     if (f.type === 'eggs') {
-      const val = saved[f.key] !== undefined ? saved[f.key] : '';
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
         <div class="input-row">
-          <input class="cost-input eggs-input" type="number" id="ci-eggs" placeholder="0"
-            value="${val}" oninput="updateResult('${esc}',${price})" />
+          <input class="cost-input eggs-input" type="number" id="ci-eggs" placeholder="알수 입력"
+            value="${eggsVal}"
+            oninput="onCalcEggsChange('${esc}',${price})" />
           <span class="cost-calc-val" id="cv-eggs">-</span>
         </div>
       </div>`;
@@ -976,12 +1290,26 @@ function renderCalc(name, price) {
     </div>`;
   }).join('');
 
+  // 생산알수 상단 표시줄 (사이드 메뉴에는 표시 안 함)
+  const eggsBarHtml = isSideMenu ? '' : `
+    <div class="calc-eggs-bar">
+      <span class="calc-eggs-bar-label">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+          <ellipse cx="8" cy="9" rx="4.5" ry="6"/>
+        </svg>
+        생산알수
+      </span>
+      <span class="calc-eggs-bar-value" id="calc-eggs-value">${eggsVal ? Number(eggsVal).toLocaleString() + '알' : '미입력'}</span>
+      <span class="calc-eggs-bar-hint">위 패널에서 일괄 변경 가능</span>
+    </div>`;
+
   document.getElementById('calc-area').innerHTML =
     `<div class="calc-panel">
       <div class="calc-header">
         <span class="calc-product-name">${name}</span>
         <span class="calc-product-price">판매가 ${price.toLocaleString()}원</span>
       </div>
+      ${eggsBarHtml}
       <div class="cost-grid">${rows}</div>
       <div class="result-bar" id="result-bar"></div>
       <div class="action-bar">
@@ -989,6 +1317,23 @@ function renderCalc(name, price) {
         <button class="btn-reset" onclick="confirmReset('${esc}',${price})">초기화</button>
       </div>
     </div>`;
+
+  updateResult(name, price);
+}
+
+// 계산기 내 생산알수 변경 시 — 글로벌 패널에도 동기화
+function onCalcEggsChange(name, price) {
+  const v = parseInt(document.getElementById('ci-eggs')?.value) || 0;
+  globalEggs = v;
+  try { localStorage.setItem('bokhodu_global_eggs', v); } catch(e) {}
+
+  // 글로벌 인풋 동기화
+  const gEl = document.getElementById('global-eggs');
+  if (gEl) gEl.value = v > 0 ? v : '';
+
+  // 상단 배지 업데이트
+  const badge = document.getElementById('calc-eggs-value');
+  if (badge) badge.textContent = v > 0 ? v.toLocaleString() + '알' : '미입력';
 
   updateResult(name, price);
 }
@@ -1008,8 +1353,6 @@ function updateResult(name, price) {
   const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
   const is8 = name.includes('8개입');
   const qtyMult = is8 ? 8 : 20;
-
-  // 제품 유형에 맞는 필드셋 선택
   const fields = getCostFields(name);
 
   fields.forEach(f => {
@@ -1057,6 +1400,8 @@ function updateResult(name, price) {
     }
   });
 
+  // eggs 값도 저장 대상에 포함
+  vals.eggs = eggs;
   currentVals[name] = vals;
 
   const margin = price - total;
@@ -1082,7 +1427,7 @@ function updateResult(name, price) {
 }
 
 function saveData(name) {
-  if (currentVals[name]) savedCosts[name] = currentVals[name];
+  if (currentVals[name]) savedCosts[name] = { ...currentVals[name] };
   try {
     localStorage.setItem('bokhodu_costs', JSON.stringify(savedCosts));
     refreshAllGrids();
@@ -1123,6 +1468,7 @@ function resetData(name, price) {
     localStorage.setItem('bokhodu_costs', JSON.stringify(savedCosts));
   } catch(e) {}
   renderCalc(name, price);
+  if (selectedEl) selectedEl.classList.add('selected');
   refreshAllGrids();
   showToast('초기화되었습니다');
 }
@@ -1131,7 +1477,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function refreshAllGrids() {
