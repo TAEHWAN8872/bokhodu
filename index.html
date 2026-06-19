@@ -793,6 +793,64 @@
   .modal-btn-confirm:hover { opacity: 0.85; }
 
   .hidden { display: none; }
+
+  /* ── 선물세트 전용 ── */
+  .cost-item.linked {
+    background: var(--bg-sub);
+    position: relative;
+  }
+  .cost-item.linked::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+  .linked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .linked-value {
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 7px 9px;
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .linked-value.no-data {
+    color: var(--ink-3);
+    font-size: 12px;
+    font-style: italic;
+  }
+  .gift-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--accent-bg);
+    border-bottom: 1px solid var(--accent-border);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    flex-wrap: wrap;
+    line-height: 1.5;
+  }
+  .gift-info-bar svg { flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -834,6 +892,7 @@
     <button class="tab-btn active" onclick="switchTab('20')">20개입 호두과자</button>
     <button class="tab-btn" onclick="switchTab('8')">답례품 (8개입)</button>
     <button class="tab-btn" onclick="switchTab('side')">사이드</button>
+    <button class="tab-btn" onclick="switchTab('gift')">선물세트</button>
   </div>
 
   <div id="panel-20">
@@ -853,6 +912,11 @@
   <div id="panel-side" class="hidden">
     <p class="section-title">사이드 메뉴</p>
     <div class="product-grid" id="grid-side"></div>
+  </div>
+
+  <div id="panel-gift" class="hidden">
+    <p class="section-title">선물세트</p>
+    <div class="product-grid" id="grid-gift"></div>
   </div>
 
   <div id="calc-area">
@@ -912,6 +976,10 @@ const products = {
     {name:'호두정과', price:5000},
     {name:'그래놀라', price:4800},
     {name:'행복식혜', price:1800},
+  ],
+  gift: [
+    {name:'그래놀라 선물세트', price:24700},
+    {name:'호두정과 선물세트', price:24900},
   ]
 };
 
@@ -989,8 +1057,86 @@ const costFieldsSide = {
   ],
 };
 
+// ── 선물세트 원가 필드 ──
+// type:'linked8' = 답례품 8개입 저장값에서 자동 계산
+// type:'linked_side' = 사이드 메뉴 저장값에서 자동 계산
+// type:'fixed' = 고정값 그대로
+const costFieldsGift = {
+  '그래놀라 선물세트': [
+    { key:'g_pat',      label:'팥호두과자 8개입',   type:'linked8',    sourceKey:'팥호두과자 8개입' },
+    { key:'g_ang',      label:'앙버터 8개입',        type:'linked8',    sourceKey:'앙버터 8개입' },
+    { key:'g_lemon',    label:'레몬버터 8개입',      type:'linked8',    sourceKey:'레몬버터 8개입' },
+    { key:'g_apple',    label:'청사과버터 8개입',    type:'linked8',    sourceKey:'청사과버터 8개입' },
+    { key:'g_granola',  label:'그래놀라',             type:'linked_side',sourceKey:'그래놀라' },
+    { key:'gift_box',   label:'선물세트 박스',        type:'fixed',      fixed:726 },
+    { key:'gift_bag',   label:'쇼핑백',               type:'fixed',      fixed:363 },
+  ],
+  '호두정과 선물세트': [
+    { key:'g_pat',      label:'팥호두과자 8개입',   type:'linked8',    sourceKey:'팥호두과자 8개입' },
+    { key:'g_ang',      label:'앙버터 8개입',        type:'linked8',    sourceKey:'앙버터 8개입' },
+    { key:'g_lemon',    label:'레몬버터 8개입',      type:'linked8',    sourceKey:'레몬버터 8개입' },
+    { key:'g_apple',    label:'청사과버터 8개입',    type:'linked8',    sourceKey:'청사과버터 8개입' },
+    { key:'g_jeonggwa', label:'호두정과',             type:'linked_side',sourceKey:'호두정과' },
+    { key:'gift_box',   label:'선물세트 박스',        type:'fixed',      fixed:726 },
+    { key:'gift_bag',   label:'쇼핑백',               type:'fixed',      fixed:363 },
+  ],
+};
+
+// 답례품(8개입) 저장값으로부터 원가 계산
+function calcLinked8Cost(sourceName) {
+  const s = savedCosts[sourceName];
+  if (!s) return null; // 저장 안 됨
+  const eggs = s.eggs || globalEggs || 0;
+  // costFields8 로직 그대로 재현
+  let total = 0;
+  const butterCfg = getButterConfig(sourceName);
+  const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
+  costFields8.forEach(f => {
+    if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return;
+    if (f.type === 'fixed') { total += f.fixed; return; }
+    if (f.type === 'eggs')  { return; }
+    const v = s[f.key] !== undefined ? s[f.key] : f.defaultVal;
+    let contrib = 0;
+    if (butterKeys.includes(f.key)) {
+      const mult = butterCfg[f.key];
+      if (f.key === 'butter_dono')       contrib = v / 2700 * mult;
+      else if (f.key === 'butter_apple') contrib = v / 600  * mult;
+      else if (f.key === 'butter_lemon') contrib = v / 2300 * mult;
+    } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key)) {
+      if (f.key === 'premix')            contrib = eggs > 0 ? v / eggs * 8 : 0;
+      else if (f.key === 'redbean')      contrib = eggs > 0 ? v / eggs * 8 : 0;
+      else if (f.key === 'walnut')       contrib = eggs > 0 ? v / 4 / eggs * 8 : 0;
+      else if (f.key === 'milk')         contrib = eggs > 0 ? v / eggs * 8 : 0;
+      else if (f.key === 'egg')          contrib = eggs > 0 ? v / 30 * 110 / eggs * 8 : 0;
+      else if (f.key === 'dough_butter') contrib = eggs > 0 ? v / eggs * 8 : 0;
+    } else {
+      contrib = f.formula ? f.formula(v, eggs) : 0;
+    }
+    total += contrib;
+  });
+  return total;
+}
+
+// 사이드 메뉴 저장값으로부터 원가 계산
+function calcLinkedSideCost(sourceName) {
+  const s = savedCosts[sourceName];
+  const fields = costFieldsSide[sourceName];
+  if (!s || !fields) return null;
+  let total = 0;
+  fields.forEach(f => {
+    if (f.type === 'fixed') { total += f.fixed; return; }
+    const v = s[f.key] !== undefined ? s[f.key] : f.defaultVal;
+    const contrib = f.formula ? f.formula(v) : 0;
+    total += contrib;
+  });
+  return total;
+}
+
+function isGiftSet(name) { return name in costFieldsGift; }
+
 function getCostFields(name) {
   if (name in costFieldsSide) return costFieldsSide[name];
+  if (name in costFieldsGift) return costFieldsGift[name];
   return name.includes('8개입') ? costFields8 : costFields20;
 }
 
@@ -1150,14 +1296,21 @@ renderGrid('grid-single-20', products.single20);
 renderGrid('grid-single-8',  products.single8);
 renderGrid('grid-mix-8',     products.mix8);
 renderGrid('grid-side',      products.side);
+renderGrid('grid-gift',      products.gift);
 
 function switchTab(t) {
   document.querySelectorAll('.tab-btn').forEach((b, i) =>
-    b.classList.toggle('active', (t === '20' && i === 0) || (t === '8' && i === 1) || (t === 'side' && i === 2))
+    b.classList.toggle('active',
+      (t === '20'   && i === 0) ||
+      (t === '8'    && i === 1) ||
+      (t === 'side' && i === 2) ||
+      (t === 'gift' && i === 3)
+    )
   );
-  document.getElementById('panel-20').classList.toggle('hidden', t !== '20');
-  document.getElementById('panel-8').classList.toggle('hidden', t !== '8');
+  document.getElementById('panel-20').classList.toggle('hidden',   t !== '20');
+  document.getElementById('panel-8').classList.toggle('hidden',    t !== '8');
   document.getElementById('panel-side').classList.toggle('hidden', t !== 'side');
+  document.getElementById('panel-gift').classList.toggle('hidden', t !== 'gift');
   if (selectedEl) { selectedEl.classList.remove('selected'); selectedEl = null; }
   currentOpenName = null;
   currentOpenPrice = null;
@@ -1215,11 +1368,88 @@ function renderCalc(name, price) {
   const butterKeys = ['butter_dono', 'butter_apple', 'butter_lemon'];
   const is8 = name.includes('8개입');
   const isSideMenu = name in costFieldsSide;
+  const isGift = isGiftSet(name);
   const fields = getCostFields(name);
 
   // 생산알수: saved > global > 0
   const eggsVal = saved.eggs !== undefined ? saved.eggs
                 : (globalEggs > 0 ? globalEggs : '');
+
+  // ── 선물세트 전용 렌더 ──
+  if (isGift) {
+    const rows = fields.map(f => {
+      if (f.type === 'fixed') {
+        return `<div class="cost-item">
+          <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
+          <div class="input-row">
+            <div class="cost-fixed">${fmt(f.fixed)}</div>
+            <span class="cost-calc-val">${fmt(f.fixed)}원</span>
+          </div>
+        </div>`;
+      }
+      if (f.type === 'linked8') {
+        const val = calcLinked8Cost(f.sourceKey);
+        const hasSave = savedCosts[f.sourceKey];
+        const display = val !== null
+          ? `<div class="linked-value">${val.toFixed(1)}원</div>`
+          : `<div class="linked-value no-data">저장값 없음 — 답례품 탭에서 먼저 저장하세요</div>`;
+        const badge = hasSave ? '<span class="linked-badge">연동됨</span>' : '';
+        return `<div class="cost-item linked" id="li-${f.key}">
+          <label class="cost-label">${f.label}${badge}</label>
+          <div class="input-row">
+            ${display}
+            <span class="cost-calc-val" id="cv-${f.key}">${val !== null ? fmtCalc(val) : '-'}</span>
+          </div>
+        </div>`;
+      }
+      if (f.type === 'linked_side') {
+        const val = calcLinkedSideCost(f.sourceKey);
+        const hasSave = savedCosts[f.sourceKey];
+        const display = val !== null
+          ? `<div class="linked-value">${val.toFixed(1)}원</div>`
+          : `<div class="linked-value no-data">저장값 없음 — 사이드 탭에서 먼저 저장하세요</div>`;
+        const badge = hasSave ? '<span class="linked-badge">연동됨</span>' : '';
+        return `<div class="cost-item linked" id="li-${f.key}">
+          <label class="cost-label">${f.label}${badge}</label>
+          <div class="input-row">
+            ${display}
+            <span class="cost-calc-val" id="cv-${f.key}">${val !== null ? fmtCalc(val) : '-'}</span>
+          </div>
+        </div>`;
+      }
+      return '';
+    }).join('');
+
+    const infoBar = `
+      <div class="gift-info-bar">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M8 2L8 14M2 8L14 8" stroke-linecap="round"/>
+          <rect x="2" y="5" width="12" height="9" rx="1.5"/>
+          <path d="M5 5C5 3.5 6.5 2 8 2C9.5 2 11 3.5 11 5" stroke-linecap="round" fill="none"/>
+        </svg>
+        각 구성품 원가는 저장된 값에서 자동 연동됩니다. 값을 바꾸려면 해당 탭에서 수정 후 저장하세요.
+      </div>`;
+
+    document.getElementById('calc-area').innerHTML =
+      `<div class="calc-panel">
+        <div class="calc-header">
+          <span class="calc-product-name">${name}</span>
+          <span class="calc-product-price">판매가 ${price.toLocaleString()}원</span>
+        </div>
+        ${infoBar}
+        <div class="cost-grid">${rows}</div>
+        <div class="result-bar" id="result-bar"></div>
+        <div class="action-bar">
+          <button class="btn-save" onclick="saveData('${esc}')">저장하기</button>
+          <button class="btn-reset" onclick="confirmReset('${esc}',${price})">초기화</button>
+        </div>
+      </div>`;
+
+    updateResult(name, price);
+    return;
+  }
+
+  // ── 기존 일반 렌더 ──
 
   const rows = fields.length === 0
     ? `<div class="cost-item" style="grid-column:1/-1;color:var(--ink-3);font-size:13px;text-align:center;padding:24px 16px;">원가 항목이 없습니다</div>`
@@ -1346,6 +1576,54 @@ function getFieldVal(f) {
 }
 
 function updateResult(name, price) {
+  const isGift = isGiftSet(name);
+
+  // ── 선물세트: linked 필드에서 합산 ──
+  if (isGift) {
+    const fields = costFieldsGift[name];
+    let total = 0;
+    fields.forEach(f => {
+      let contrib = 0;
+      if (f.type === 'fixed') {
+        contrib = f.fixed;
+      } else if (f.type === 'linked8') {
+        const v = calcLinked8Cost(f.sourceKey);
+        contrib = v !== null ? v : 0;
+      } else if (f.type === 'linked_side') {
+        const v = calcLinkedSideCost(f.sourceKey);
+        contrib = v !== null ? v : 0;
+      }
+      total += contrib;
+      const cvEl = document.getElementById('cv-' + f.key);
+      if (cvEl) cvEl.textContent = contrib > 0 ? fmtCalc(contrib) : '-';
+    });
+
+    currentVals[name] = { _gift: true, _total: total };
+
+    const margin = price - total;
+    const marginPct = price > 0 ? ((margin / price) * 100).toFixed(1) : null;
+    const costPct   = price > 0 ? ((total  / price) * 100).toFixed(1) : null;
+    const cls = margin >= 0 ? 'positive' : 'negative';
+
+    document.getElementById('result-bar').innerHTML =
+      `<div class="result-card">
+        <div class="result-label">총 원가</div>
+        <div class="result-value">${total.toFixed(1)}원</div>
+        <div class="result-pct">${costPct !== null ? costPct + '%' : '-'}</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">마진</div>
+        <div class="result-value ${cls}">${margin.toFixed(1)}원</div>
+        <div class="result-pct ${cls}">${marginPct !== null ? marginPct + '%' : '-'}</div>
+      </div>
+      <div class="result-card">
+        <div class="result-label">판매가</div>
+        <div class="result-value">${price.toLocaleString()}원</div>
+      </div>`;
+    return;
+  }
+
+  // ── 기존 일반 계산 ──
   const eggs = getFieldVal({ type:'eggs' });
   let total = 0;
   const vals = {};
@@ -1488,6 +1766,7 @@ function refreshAllGrids() {
   renderGrid('grid-single-8',  products.single8);
   renderGrid('grid-mix-8',     products.mix8);
   renderGrid('grid-side',      products.side);
+  renderGrid('grid-gift',      products.gift);
 
   if (prevId) {
     const restored = document.getElementById(prevId);
