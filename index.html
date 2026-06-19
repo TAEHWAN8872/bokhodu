@@ -1027,7 +1027,7 @@ function updateResult(name, price) {
       if (f.key === 'butter_dono')       contrib = v / 2700 * mult;
       else if (f.key === 'butter_apple') contrib = v / 600  * mult;
       else if (f.key === 'butter_lemon') contrib = v / 2300 * mult;
-    } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key)) {
+    } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key) && !(name in costFieldsSide)) {
       if (f.key === 'premix')            contrib = eggs > 0 ? v / eggs * qtyMult : 0;
       else if (f.key === 'redbean')      contrib = eggs > 0 ? v / eggs * qtyMult : 0;
       else if (f.key === 'walnut')       contrib = eggs > 0 ? v / 4 / eggs * qtyMult : 0;
