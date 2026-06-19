@@ -680,34 +680,51 @@ const products = {
   ]
 };
 
-const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
-
-// ── costFields ──
-// 변경사항:
-//   유산지: fixed 22 → 22 (원래 5였는데 실제로는 22로 수정)
-//   화지: fixed 22 → 24
-//   스티커: fixed 7 → 17
-//   반죽버터: 고정 1623원 추가 (전 제품 공통)
-//   레몬버터 defaultVal: 178200
-//   청사과버터 defaultVal: 114950
-const costFields = [
-  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용',          formula:()=>0 },
-  { key:'box',           label:'상자',       type:'preset', defaultVal:153120, hint:'÷ 400',               formula:(v)=> v/400 },
-  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:165000, hint:'÷ 1,200',             formula:(v)=> v/1200 },
+// ── 20개입 전용 원가 필드 ──
+const costFields20 = [
+  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용' },
+  { key:'box',           label:'상자',       type:'preset', defaultVal:153120, hint:'÷ 400',                  formula:(v)=> v/400 },
+  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:165000, hint:'÷ 1,200',                formula:(v)=> v/1200 },
   { key:'paper',         label:'유산지',     type:'fixed',  fixed:22 },
   { key:'wrap',          label:'화지',       type:'fixed',  fixed:24 },
-  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623, hint:'÷ 생산알수 ×20', formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',         formula:(v)=> v/2700*20 },
-  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',           formula:(v)=> v/600*20 },
-  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×20',         formula:(v)=> v/2300*20 },
-  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',  formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
-  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',      formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
+  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',            formula:(v)=> v/2700*20 },
+  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',              formula:(v)=> v/600*20 },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×20',            formula:(v)=> v/2300*20 },
+  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',     formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
+  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
   { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
   { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17 },
   { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:67 },
 ];
+
+// ── 답례품(8개입) 전용 원가 필드 ──
+// 유산지 없음 / 화지 10원 고정 / 상자 149160÷600 / 십자간지 20460÷600 / 비닐봉투 44원 고정
+const costFields8 = [
+  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
+  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
+  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용' },
+  { key:'box',           label:'상자',       type:'preset', defaultVal:149160, hint:'÷ 600',                  formula:(v)=> v/600 },
+  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:20460,  hint:'÷ 600',                  formula:(v)=> v/600 },
+  { key:'wrap',          label:'화지',       type:'fixed',  fixed:10 },
+  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
+  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×4',             formula:(v)=> v/2700*4 },
+  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×4',               formula:(v)=> v/600*4 },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×4',             formula:(v)=> v/2300*4 },
+  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×8',      formula:(v,e)=> e>0 ? v/4/e*8 : 0 },
+  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
+  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×8',  formula:(v,e)=> e>0 ? v/30*110/e*8 : 0 },
+  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17 },
+  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:44 },
+];
+
+const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
+
+function getCostFields(name) {
+  return name.includes('8개입') ? costFields8 : costFields20;
+}
 
 function fmt(n) {
   if (n === null || n === undefined || n === '') return '';
@@ -814,7 +831,10 @@ function renderCalc(name, price) {
   const is8 = name.includes('8개입');
   const qtyMult = is8 ? 8 : 20;
 
-  const rows = costFields.map(f => {
+  // 제품 유형에 맞는 필드셋 선택
+  const fields = getCostFields(name);
+
+  const rows = fields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
     if (f.key === 'dough_butter' && name.includes('청사과')) return '';
 
@@ -842,16 +862,14 @@ function renderCalc(name, price) {
 
     if (f.type === 'preset') {
       const initVal = saved[f.key] !== undefined ? saved[f.key] : f.defaultVal;
-      const profitRow = profit20Keys.has(f.key)
+      const profitRow = profit20Keys.has(f.key) && !is8
         ? `<div class="cost-profit-val" id="cp-${f.key}"></div>`
         : '';
-      // 버터 힌트 동적 생성
-      let hintText = f.hint;
+      let hintText = f.hint || '';
       if (butterKeys.includes(f.key)) {
         if (f.key === 'butter_apple') hintText = '÷ 600 ×' + butterCfg[f.key];
+        else if (f.key === 'butter_lemon') hintText = '÷ 2,300 ×' + butterCfg[f.key];
         else hintText = '÷ 2,700 ×' + butterCfg[f.key];
-      } else {
-        hintText = f.hint.replace('×20', '×' + qtyMult);
       }
       return `<div class="cost-item">
         <label class="cost-label">${f.label} <span class="cost-hint">${hintText}</span></label>
@@ -873,14 +891,8 @@ function renderCalc(name, price) {
     }
 
     const val = saved[f.key] !== undefined ? saved[f.key] : '';
-    let hintText2 = '';
-    if (butterKeys.includes(f.key)) {
-      hintText2 = f.key === 'butter_apple' ? '÷ 600 ×' + butterCfg[f.key] : '÷ 2,700 ×' + butterCfg[f.key];
-    } else {
-      hintText2 = f.hint || '';
-    }
     return `<div class="cost-item">
-      <label class="cost-label">${f.label} <span class="cost-hint">${hintText2}</span></label>
+      <label class="cost-label">${f.label} <span class="cost-hint">${f.hint||''}</span></label>
       <div class="input-row">
         <input class="cost-input" type="number" id="ci-${f.key}" placeholder="0"
           value="${val}" oninput="updateResult('${esc}',${price})" />
@@ -922,7 +934,10 @@ function updateResult(name, price) {
   const is8 = name.includes('8개입');
   const qtyMult = is8 ? 8 : 20;
 
-  costFields.forEach(f => {
+  // 제품 유형에 맞는 필드셋 선택
+  const fields = getCostFields(name);
+
+  fields.forEach(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return;
 
     const v = getFieldVal(f);
@@ -938,21 +953,21 @@ function updateResult(name, price) {
       else if (f.key === 'butter_apple') contrib = v / 600  * mult;
       else if (f.key === 'butter_lemon') contrib = v / 2300 * mult;
     } else if (['premix','redbean','walnut','milk','egg','dough_butter'].includes(f.key)) {
-      if (f.key === 'premix')              contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'redbean')        contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'walnut')         contrib = eggs > 0 ? v / 4 / eggs * qtyMult : 0;
-      else if (f.key === 'milk')           contrib = eggs > 0 ? v / eggs * qtyMult : 0;
-      else if (f.key === 'egg')            contrib = eggs > 0 ? v / 30 * 110 / eggs * qtyMult : 0;
-      else if (f.key === 'dough_butter')   contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      if (f.key === 'premix')            contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'redbean')      contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'walnut')       contrib = eggs > 0 ? v / 4 / eggs * qtyMult : 0;
+      else if (f.key === 'milk')         contrib = eggs > 0 ? v / eggs * qtyMult : 0;
+      else if (f.key === 'egg')          contrib = eggs > 0 ? v / 30 * 110 / eggs * qtyMult : 0;
+      else if (f.key === 'dough_butter') contrib = eggs > 0 ? v / eggs * qtyMult : 0;
     } else {
-      contrib = f.formula(v, eggs);
+      contrib = f.formula ? f.formula(v, eggs) : 0;
     }
     total += contrib;
 
     const cvEl = document.getElementById('cv-' + f.key);
     if (cvEl) cvEl.textContent = fmtCalc(contrib);
 
-    if (profit20Keys.has(f.key)) {
+    if (!is8 && profit20Keys.has(f.key)) {
       const cpEl = document.getElementById('cp-' + f.key);
       if (cpEl) {
         const t20 = fmtTimes20(contrib);
