@@ -767,16 +767,29 @@ const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
 
 // ── 사이드 메뉴 원가 필드 (제품별로 다름) ──
 const costFieldsSide = {
-  '콜드브루 라떼': [
+  '콜드브루 아메리카노': [
     { key:'coldbrew',  label:'콜드브루 원액', type:'preset', defaultVal:10780, hint:'÷ 12',      formula:(v)=> v/12 },
     { key:'sticker',   label:'스티커',         type:'preset', defaultVal:23000, hint:'÷ 400',     formula:(v)=> v/400 },
     { key:'container', label:'용기',            type:'preset', defaultVal:82900, hint:'÷ 176',     formula:(v)=> v/176 },
   ],
-  '콜드브루 아메리카노': [],
-  '호두육포': [],
-  '호두정과': [],
-  '그래놀라': [],
-  '행복식혜': [],
+  '콜드브루 라떼': [
+    { key:'coldbrew',  label:'콜드브루 원액', type:'preset', defaultVal:10780, hint:'÷ 12',       formula:(v)=> v/12 },
+    { key:'milk',      label:'우유',           type:'preset', defaultVal:2100,  hint:'× 0.21',     formula:(v)=> v*0.21 },
+    { key:'sticker',   label:'스티커',         type:'preset', defaultVal:11500, hint:'÷ 200',      formula:(v)=> v/200 },
+    { key:'container', label:'용기',            type:'preset', defaultVal:82900, hint:'÷ 176',      formula:(v)=> v/176 },
+  ],
+  '호두육포': [
+    { key:'order',     label:'발주금액',       type:'preset', defaultVal:209000, hint:'÷ 50',      formula:(v)=> v/50 },
+  ],
+  '호두정과': [
+    { key:'order',     label:'발주금액',       type:'preset', defaultVal:160000, hint:'÷ 50',      formula:(v)=> v/50 },
+  ],
+  '그래놀라': [
+    { key:'order',     label:'발주금액',       type:'preset', defaultVal:151000, hint:'÷ 50',      formula:(v)=> v/50 },
+  ],
+  '행복식혜': [
+    { key:'order',     label:'발주금액',       type:'preset', defaultVal:29568,  hint:'÷ 24',      formula:(v)=> v/24 },
+  ],
 };
 
 function getCostFields(name) {
