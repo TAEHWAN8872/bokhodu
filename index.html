@@ -865,7 +865,7 @@ function renderCalc(name, price) {
 
   const rows = fields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
-    if (f.key === 'dough_butter' && name.includes('청사과')) return '';
+
 
     if (f.type === 'fixed') {
       return `<div class="cost-item">
