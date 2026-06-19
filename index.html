@@ -381,14 +381,19 @@
 
   .result-bar {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1.5fr 1fr;
     padding: 0;
+    align-items: stretch;
   }
 
   .result-card {
     padding: 18px 16px;
     text-align: center;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .result-card + .result-card::before {
@@ -399,8 +404,12 @@
     background: var(--border);
   }
 
+  /* 마진 카드 강조 */
   .result-card:nth-child(2) {
     background: var(--bg-sub);
+    padding: 24px 16px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
   }
 
   .result-label {
@@ -412,6 +421,13 @@
     margin-bottom: 6px;
   }
 
+  /* 마진 카드 라벨 */
+  .result-card:nth-child(2) .result-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
   .result-value {
     font-size: 20px;
     font-weight: 700;
@@ -419,6 +435,12 @@
     line-height: 1.1;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* 마진 카드 숫자 1.5배 */
+  .result-card:nth-child(2) .result-value {
+    font-size: 30px;
+    letter-spacing: -0.03em;
   }
 
   .result-value.positive { color: var(--green); }
@@ -429,6 +451,13 @@
     color: var(--ink-3);
     margin-top: 4px;
     font-weight: 500;
+  }
+
+  /* 마진 카드 퍼센트 */
+  .result-card:nth-child(2) .result-pct {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 6px;
   }
 
   .result-pct.positive { color: var(--green); }
