@@ -642,6 +642,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('20')">20개입 호두과자</button>
     <button class="tab-btn" onclick="switchTab('8')">답례품 (8개입)</button>
+    <button class="tab-btn" onclick="switchTab('side')">사이드</button>
   </div>
 
   <div id="panel-20">
@@ -656,6 +657,11 @@
     <div class="product-grid" id="grid-single-8"></div>
     <p class="section-title">믹스 조합 (2종)</p>
     <div class="product-grid" id="grid-mix-8"></div>
+  </div>
+
+  <div id="panel-side" class="hidden">
+    <p class="section-title">사이드 메뉴</p>
+    <div class="product-grid" id="grid-side"></div>
   </div>
 
   <div id="calc-area">
@@ -680,32 +686,40 @@
 <script>
 const products = {
   mix20: [
-    {name:'팥&양 20개입', price:9500},
+    {name:'팥&앙 20개입', price:9500},
     {name:'팥&레몬 20개입', price:10000},
     {name:'팥&청사과 20개입', price:11000},
-    {name:'양&레몬 20개입', price:11000},
-    {name:'양&청사과 20개입', price:12000},
+    {name:'앙&레몬 20개입', price:11000},
+    {name:'앙&청사과 20개입', price:12000},
     {name:'레몬&청사과 20개입', price:12500},
   ],
   single20: [
     {name:'팥호두과자 20개입', price:8000},
-    {name:'양버터 20개입', price:10000},
+    {name:'앙버터 20개입', price:10000},
     {name:'레몬버터 20개입', price:11000},
     {name:'청사과 20개입', price:13000},
   ],
   single8: [
     {name:'팥호두과자 8개입', price:4000},
-    {name:'양버터 8개입', price:5000},
+    {name:'앙버터 8개입', price:5000},
     {name:'레몬버터 8개입', price:5500},
     {name:'청사과버터 8개입', price:6500},
   ],
   mix8: [
-    {name:'팥&양 8개입', price:4500},
+    {name:'팥&앙 8개입', price:4500},
     {name:'팥&레몬 8개입', price:4800},
     {name:'팥&청사과 8개입', price:5300},
-    {name:'양&레몬 8개입', price:5300},
-    {name:'양&청사과 8개입', price:5800},
+    {name:'앙&레몬 8개입', price:5300},
+    {name:'앙&청사과 8개입', price:5800},
     {name:'레몬&청사과 8개입', price:6100},
+  ],
+  side: [
+    {name:'콜드브루 라떼', price:4000},
+    {name:'콜드브루 아메리카노', price:3000},
+    {name:'호두육포', price:6000},
+    {name:'호두정과', price:5000},
+    {name:'그래놀라', price:4800},
+    {name:'행복식혜', price:1800},
   ]
 };
 
@@ -751,7 +765,22 @@ const costFields8 = [
 
 const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
 
+// ── 사이드 메뉴 원가 필드 (제품별로 다름) ──
+const costFieldsSide = {
+  '콜드브루 라떼': [
+    { key:'coldbrew',  label:'콜드브루 원액', type:'preset', defaultVal:10780, hint:'÷ 12',      formula:(v)=> v/12 },
+    { key:'sticker',   label:'스티커',         type:'preset', defaultVal:23000, hint:'÷ 400',     formula:(v)=> v/400 },
+    { key:'container', label:'용기',            type:'preset', defaultVal:82900, hint:'÷ 176',     formula:(v)=> v/176 },
+  ],
+  '콜드브루 아메리카노': [],
+  '호두육포': [],
+  '호두정과': [],
+  '그래놀라': [],
+  '행복식혜': [],
+};
+
 function getCostFields(name) {
+  if (name in costFieldsSide) return costFieldsSide[name];
   return name.includes('8개입') ? costFields8 : costFields20;
 }
 
@@ -800,13 +829,15 @@ renderGrid('grid-mix-20',    products.mix20);
 renderGrid('grid-single-20', products.single20);
 renderGrid('grid-single-8',  products.single8);
 renderGrid('grid-mix-8',     products.mix8);
+renderGrid('grid-side',      products.side);
 
 function switchTab(t) {
   document.querySelectorAll('.tab-btn').forEach((b, i) =>
-    b.classList.toggle('active', (t === '20' && i === 0) || (t === '8' && i === 1))
+    b.classList.toggle('active', (t === '20' && i === 0) || (t === '8' && i === 1) || (t === 'side' && i === 2))
   );
   document.getElementById('panel-20').classList.toggle('hidden', t !== '20');
   document.getElementById('panel-8').classList.toggle('hidden', t !== '8');
+  document.getElementById('panel-side').classList.toggle('hidden', t !== 'side');
   if (selectedEl) { selectedEl.classList.remove('selected'); selectedEl = null; }
   document.getElementById('calc-area').innerHTML =
     '<div class="placeholder">제품을 클릭하면 원가 계산기가 열립니다</div>';
@@ -839,7 +870,7 @@ function togglePreset(key, name, price) {
 }
 
 function getButterConfig(name) {
-  const hasDono  = name.includes('양');
+  const hasDono  = name.includes('앙');
   const hasApple = name.includes('청사과');
   const hasLemon = name.includes('레몬');
   const isMix    = name.includes('&');
@@ -863,7 +894,9 @@ function renderCalc(name, price) {
   // 제품 유형에 맞는 필드셋 선택
   const fields = getCostFields(name);
 
-  const rows = fields.map(f => {
+  const rows = fields.length === 0
+    ? `<div class="cost-item" style="grid-column:1/-1;color:var(--ink-3);font-size:13px;text-align:center;padding:24px 16px;">원가 항목이 없습니다</div>`
+    : fields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
 
 
@@ -1095,6 +1128,7 @@ function refreshAllGrids() {
   renderGrid('grid-single-20', products.single20);
   renderGrid('grid-single-8',  products.single8);
   renderGrid('grid-mix-8',     products.mix8);
+  renderGrid('grid-side',      products.side);
 
   if (prevId) {
     const restored = document.getElementById(prevId);
