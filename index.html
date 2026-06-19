@@ -991,6 +991,7 @@ function updateResult(name, price) {
     } else {
       contrib = f.formula ? f.formula(v, eggs) : 0;
     }
+    if (contrib === undefined) contrib = 0;
     total += contrib;
 
     const cvEl = document.getElementById('cv-' + f.key);
