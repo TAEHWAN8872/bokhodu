@@ -885,29 +885,18 @@
   }
   .gift-info-bar svg { flex-shrink: 0; }
 
-  /* ── 접기/펼치기 섹션 헤더 ── */
-  .section-toggle {
-    grid-column: 1 / -1;
-    background: var(--bg-sub);
-    padding: 8px 16px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--ink-2);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    user-select: none;
-    border-left: none;
-  }
-  .section-toggle:hover { background: var(--border); }
-  .section-toggle .toggle-arrow {
+  /* ── 1알 가격 표시 ── */
+  .result-per-egg {
     font-size: 10px;
-    transition: transform 0.2s;
+    color: var(--ink-3);
+    margin-top: 3px;
+    font-style: italic;
   }
-  .section-toggle.collapsed .toggle-arrow { transform: rotate(-90deg); }
-  .cost-item.section-hidden { display: none; }
+  .result-per-egg span {
+    color: var(--ink-2);
+    font-weight: 600;
+    font-style: normal;
+  }
 
 </style>
 </head>
@@ -1517,11 +1506,8 @@ function renderCalc(name, price) {
 
     const group = f.group || '';
     let divider = '';
-    if ((group === 'ingredient' || group === 'butter') && lastGroup !== 'ingredient' && lastGroup !== 'butter') {
-      divider = `<div class="section-toggle" id="toggle-ingredient" onclick="toggleSection('ingredient')" style="grid-column:1/-1;">🧂 재료비 <span class="toggle-arrow">▼</span></div>`;
-    }
     if (group === 'packaging' && lastGroup !== 'packaging') {
-      divider = `<div class="section-toggle" id="toggle-packaging" onclick="toggleSection('packaging')" style="grid-column:1/-1;">📦 포장재 <span class="toggle-arrow">▼</span></div>`;
+      divider = `<div class="cost-item group-packaging-first" style="grid-column:1/-1;background:var(--bg-sub);padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);pointer-events:none;">📦 포장재</div>`;
     }
     if (group) lastGroup = group;
 
@@ -1753,16 +1739,34 @@ function updateResult(name, price) {
   vals.eggs = eggs;
   currentVals[name] = vals;
 
+  // ── 포장재 비용 계산 ──
+  const packagingKeys = ['box','cross','paper','wrap','sticker','vinyl'];
+  let packagingTotal = 0;
+  fields.forEach(f => {
+    if (!packagingKeys.includes(f.key)) return;
+    if (f.type === 'fixed') { packagingTotal += f.fixed; return; }
+    const v = getFieldVal(f);
+    const contrib = f.formula ? f.formula(v, eggs) : 0;
+    packagingTotal += contrib;
+  });
+  const totalExPack = total - packagingTotal;
+  const perEgg = eggs > 0 ? totalExPack / qtyMult : null;
+
   const margin = price - total;
   const marginPct = price > 0 ? ((margin / price) * 100).toFixed(1) : null;
   const costPct   = price > 0 ? ((total  / price) * 100).toFixed(1) : null;
   const cls = margin >= 0 ? 'positive' : 'negative';
+
+  const perEggHtml = perEgg !== null
+    ? `<div class="result-per-egg">* 포장재 제외 &nbsp;<span>1알 : ${Math.round(perEgg)}원</span></div>`
+    : '';
 
   document.getElementById('result-bar').innerHTML =
     `<div class="result-card">
       <div class="result-label">총 원가</div>
       <div class="result-value">${total.toFixed(1)}원</div>
       <div class="result-pct">${costPct !== null ? costPct + '%' : '-'}</div>
+      ${perEggHtml}
     </div>
     <div class="result-card">
       <div class="result-label">마진</div>
@@ -1846,20 +1850,6 @@ function refreshAllGrids() {
       selectedEl = restored;
     }
   }
-}
-
-// ── 섹션 접기/펼치기 ──
-function toggleSection(group) {
-  const toggle = document.getElementById('toggle-' + group);
-  if (!toggle) return;
-  const isCollapsed = toggle.classList.toggle('collapsed');
-  // group-ingredient covers both 'ingredient' and 'butter' groups
-  const selector = group === 'ingredient'
-    ? '.group-ingredient, .group-butter'
-    : '.group-' + group;
-  document.querySelectorAll(selector).forEach(el => {
-    el.classList.toggle('section-hidden', isCollapsed);
-  });
 }
 </script>
 </body>
