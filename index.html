@@ -445,6 +445,42 @@
     border-bottom: 1px solid var(--border);
   }
 
+  /* ── 섹션 헤더 토글 ── */
+  .group-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    pointer-events: all;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .group-header:hover { background: var(--border) !important; }
+
+  .group-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .group-toggle-icon {
+    font-size: 10px;
+    transition: transform 0.2s;
+    display: inline-block;
+  }
+  .group-toggle-icon.collapsed { transform: rotate(-90deg); }
+
+  .cost-item.group-hidden {
+    display: none;
+  }
+
   @media (max-width: 420px) {
     .cost-grid { grid-template-columns: 1fr; }
   }
@@ -1408,6 +1444,7 @@ function getButterConfig(name) {
 function renderCalc(name, price) {
   currentOpenName  = name;
   currentOpenPrice = price;
+  resetGroupCollapsed();
 
   const saved = savedCosts[name] || {};
   const esc = name.replace(/'/g,"\'");
@@ -1499,6 +1536,7 @@ function renderCalc(name, price) {
   // ── 기존 일반 렌더 ──
 
   let lastGroup = null;
+  let firstIngredient = true;
   const rows = fields.length === 0
     ? `<div class="cost-item" style="grid-column:1/-1;color:var(--ink-3);font-size:13px;text-align:center;padding:24px 16px;">원가 항목이 없습니다</div>`
     : fields.map(f => {
@@ -1506,8 +1544,24 @@ function renderCalc(name, price) {
 
     const group = f.group || '';
     let divider = '';
+    if (group === 'ingredient' && firstIngredient) {
+      firstIngredient = false;
+      divider = `<div class="group-header" style="background:var(--orange-bg);border-bottom:1px solid var(--orange-border);" onclick="toggleGroup('ingredient')">
+        <span class="group-header-left">
+          <span style="color:var(--orange);">🥚</span>
+          <span style="color:var(--orange);">재료</span>
+        </span>
+        <span class="group-toggle-icon" id="toggle-icon-ingredient" style="color:var(--orange);">▼</span>
+      </div>`;
+    }
     if (group === 'packaging' && lastGroup !== 'packaging') {
-      divider = `<div class="cost-item group-packaging-first" style="grid-column:1/-1;background:var(--bg-sub);padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);pointer-events:none;">📦 포장재</div>`;
+      divider = `<div class="group-header" style="background:var(--accent-bg);border-bottom:1px solid var(--accent-border);" onclick="toggleGroup('packaging')">
+        <span class="group-header-left">
+          <span style="color:var(--accent);">📦</span>
+          <span style="color:var(--accent);">포장재</span>
+        </span>
+        <span class="group-toggle-icon" id="toggle-icon-packaging" style="color:var(--accent);">▼</span>
+      </div>`;
     }
     if (group) lastGroup = group;
 
@@ -1831,6 +1885,29 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── 섹션 접기/펼치기 ──
+const groupCollapsed = { ingredient: false, packaging: false };
+
+function toggleGroup(groupName) {
+  groupCollapsed[groupName] = !groupCollapsed[groupName];
+  const collapsed = groupCollapsed[groupName];
+
+  // 해당 그룹의 cost-item 숨기기/보이기 (ingredient면 butter도 같이)
+  const targets = groupName === 'ingredient'
+    ? document.querySelectorAll('.cost-item.group-ingredient, .cost-item.group-butter')
+    : document.querySelectorAll(`.cost-item.group-${groupName}`);
+  targets.forEach(el => el.classList.toggle('group-hidden', collapsed));
+
+  // 아이콘 회전
+  const icon = document.getElementById(`toggle-icon-${groupName}`);
+  if (icon) icon.classList.toggle('collapsed', collapsed);
+}
+
+function resetGroupCollapsed() {
+  groupCollapsed.ingredient = false;
+  groupCollapsed.packaging = false;
 }
 
 function refreshAllGrids() {
