@@ -794,6 +794,39 @@
 
   .hidden { display: none; }
 
+  /* ── 원가 항목 그룹 색상 ── */
+  .cost-item.group-ingredient {
+    background: #fffbf0;
+    border-left: 3px solid #f59e0b;
+  }
+  .cost-item.group-butter {
+    background: #fdf4ff;
+    border-left: 3px solid #a855f7;
+  }
+  .cost-item.group-packaging {
+    background: #f0f9ff;
+    border-left: 3px solid #0ea5e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    .cost-item.group-ingredient { background: #1f1a0a; border-left-color: #d97706; }
+    .cost-item.group-butter     { background: #1a0f20; border-left-color: #9333ea; }
+    .cost-item.group-packaging  { background: #071b26; border-left-color: #0284c7; }
+  }
+
+  /* 그룹 구분선 — 포장재 첫 번째 아이템 위에 */
+  .cost-item.group-packaging-first {
+    grid-column: 1 / -1;
+    background: var(--bg-sub);
+    padding: 6px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-left: none;
+    pointer-events: none;
+  }
+
   /* ── 선물세트 전용 ── */
   .cost-item.linked {
     background: var(--bg-sub);
@@ -991,41 +1024,41 @@ const allWalnutProducts = [
 
 // ── 20개입 전용 원가 필드 ──
 const costFields20 = [
-  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용' },
-  { key:'box',           label:'상자',       type:'preset', defaultVal:153120, hint:'÷ 400',                  formula:(v)=> v/400 },
-  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:165000, hint:'÷ 1,200',                formula:(v)=> v/1200 },
-  { key:'paper',         label:'유산지',     type:'fixed',  fixed:22 },
-  { key:'wrap',          label:'화지',       type:'fixed',  fixed:24 },
-  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',            formula:(v)=> v/2700*20 },
-  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',              formula:(v)=> v/600*20 },
-  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×20',            formula:(v)=> v/2300*20 },
-  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',     formula:(v,e)=> e>0 ? v/4/e*20 : 0 },
-  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0 },
-  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0 },
-  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17 },
-  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:67 },
+  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0,  group:'ingredient' },
+  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0,  group:'ingredient' },
+  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×20', formula:(v,e)=> e>0 ? v/30*110/e*20 : 0, group:'ingredient' },
+  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0,  group:'ingredient' },
+  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×20',         formula:(v,e)=> e>0 ? v/e*20 : 0,  group:'ingredient' },
+  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×20',            formula:(v)=> v/2700*20,            group:'butter' },
+  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×20',              formula:(v)=> v/600*20,             group:'butter' },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×20',            formula:(v)=> v/2300*20,            group:'butter' },
+  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×20',     formula:(v,e)=> e>0 ? v/4/e*20 : 0, group:'ingredient' },
+  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용',             group:'ingredient' },
+  { key:'box',           label:'상자',       type:'preset', defaultVal:153120, hint:'÷ 400',                  formula:(v)=> v/400,                group:'packaging' },
+  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:165000, hint:'÷ 1,200',                formula:(v)=> v/1200,               group:'packaging' },
+  { key:'paper',         label:'유산지',     type:'fixed',  fixed:22,                                                                             group:'packaging' },
+  { key:'wrap',          label:'화지',       type:'fixed',  fixed:24,                                                                             group:'packaging' },
+  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17,                                                                             group:'packaging' },
+  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:67,                                                                             group:'packaging' },
 ];
 
 // ── 답례품(8개입) 전용 원가 필드 ──
 const costFields8 = [
-  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
-  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
-  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용' },
-  { key:'box',           label:'상자',       type:'preset', defaultVal:149160, hint:'÷ 600',                  formula:(v)=> v/600 },
-  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:20460,  hint:'÷ 600',                  formula:(v)=> v/600 },
-  { key:'wrap',          label:'화지',       type:'fixed',  fixed:10 },
-  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
-  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×4',             formula:(v)=> v/2700*4 },
-  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×4',               formula:(v)=> v/600*4 },
-  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×4',             formula:(v)=> v/2300*4 },
-  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×8',      formula:(v,e)=> e>0 ? v/4/e*8 : 0 },
-  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0 },
-  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×8',  formula:(v,e)=> e>0 ? v/30*110/e*8 : 0 },
-  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17 },
-  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:44 },
+  { key:'premix',        label:'프리믹스',   type:'preset', defaultVal:25300,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0,  group:'ingredient' },
+  { key:'redbean',       label:'팥앙금',     type:'preset', defaultVal:71060,  hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0,  group:'ingredient' },
+  { key:'egg',           label:'계란',       type:'preset', defaultVal:8500,   hint:'÷30 ×110 ÷생산알수 ×8',  formula:(v,e)=> e>0 ? v/30*110/e*8 : 0, group:'ingredient' },
+  { key:'milk',          label:'우유',       type:'preset', defaultVal:2100,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0,  group:'ingredient' },
+  { key:'dough_butter',  label:'반죽버터',   type:'preset', defaultVal:1623,   hint:'÷ 생산알수 ×8',          formula:(v,e)=> e>0 ? v/e*8 : 0,  group:'ingredient' },
+  { key:'butter_dono',   label:'도노버터',   type:'preset', defaultVal:147400, hint:'÷ 2,700 ×4',             formula:(v)=> v/2700*4,            group:'butter' },
+  { key:'butter_apple',  label:'청사과버터', type:'preset', defaultVal:114950, hint:'÷ 600 ×4',               formula:(v)=> v/600*4,             group:'butter' },
+  { key:'butter_lemon',  label:'레몬버터',   type:'preset', defaultVal:178200, hint:'÷ 2,300 ×4',             formula:(v)=> v/2300*4,            group:'butter' },
+  { key:'walnut',        label:'벌크호두',   type:'preset', defaultVal:125000, hint:'÷ 4 ÷ 생산알수 ×8',      formula:(v,e)=> e>0 ? v/4/e*8 : 0, group:'ingredient' },
+  { key:'eggs',          label:'생산알수',   type:'eggs',                       hint:'원가 미적용',             group:'ingredient' },
+  { key:'box',           label:'상자',       type:'preset', defaultVal:149160, hint:'÷ 600',                  formula:(v)=> v/600,               group:'packaging' },
+  { key:'cross',         label:'십자간지',   type:'preset', defaultVal:20460,  hint:'÷ 600',                  formula:(v)=> v/600,               group:'packaging' },
+  { key:'wrap',          label:'화지',       type:'fixed',  fixed:10,                                                                             group:'packaging' },
+  { key:'sticker',       label:'스티커',     type:'fixed',  fixed:17,                                                                             group:'packaging' },
+  { key:'vinyl',         label:'비닐봉투',   type:'fixed',  fixed:44,                                                                             group:'packaging' },
 ];
 
 const profit20Keys = new Set(['premix', 'redbean', 'walnut', 'milk', 'egg']);
@@ -1451,13 +1484,23 @@ function renderCalc(name, price) {
 
   // ── 기존 일반 렌더 ──
 
+  let lastGroup = null;
   const rows = fields.length === 0
     ? `<div class="cost-item" style="grid-column:1/-1;color:var(--ink-3);font-size:13px;text-align:center;padding:24px 16px;">원가 항목이 없습니다</div>`
     : fields.map(f => {
     if (butterKeys.includes(f.key) && !(f.key in butterCfg)) return '';
 
+    const group = f.group || '';
+    let divider = '';
+    if (group === 'packaging' && lastGroup !== 'packaging') {
+      divider = `<div class="cost-item group-packaging-first" style="grid-column:1/-1;background:var(--bg-sub);padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);pointer-events:none;">📦 포장재</div>`;
+    }
+    if (group) lastGroup = group;
+
+    const groupClass = group ? ` group-${group}` : '';
+
     if (f.type === 'fixed') {
-      return `<div class="cost-item">
+      return divider + `<div class="cost-item${groupClass}">
         <label class="cost-label">${f.label} <span class="cost-hint">고정</span></label>
         <div class="input-row">
           <div class="cost-fixed">${fmt(f.fixed)}</div>
@@ -1468,7 +1511,7 @@ function renderCalc(name, price) {
 
     // 생산알수 필드 — 글로벌 연동 인풋
     if (f.type === 'eggs') {
-      return `<div class="cost-item">
+      return divider + `<div class="cost-item${groupClass}">
         <label class="cost-label">${f.label} <span class="cost-hint">${f.hint}</span></label>
         <div class="input-row">
           <input class="cost-input eggs-input" type="number" id="ci-eggs" placeholder="알수 입력"
@@ -1490,7 +1533,7 @@ function renderCalc(name, price) {
         else if (f.key === 'butter_lemon') hintText = '÷ 2,300 ×' + butterCfg[f.key];
         else hintText = '÷ 2,700 ×' + butterCfg[f.key];
       }
-      return `<div class="cost-item">
+      return divider + `<div class="cost-item${groupClass}">
         <label class="cost-label">${f.label} <span class="cost-hint">${hintText}</span></label>
         <div class="input-row">
           <div class="preset-wrap" style="flex:1;min-width:0;">
@@ -1510,7 +1553,7 @@ function renderCalc(name, price) {
     }
 
     const val = saved[f.key] !== undefined ? saved[f.key] : '';
-    return `<div class="cost-item">
+    return divider + `<div class="cost-item${groupClass}">
       <label class="cost-label">${f.label} <span class="cost-hint">${f.hint||''}</span></label>
       <div class="input-row">
         <input class="cost-input" type="number" id="ci-${f.key}" placeholder="0"
