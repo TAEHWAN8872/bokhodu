@@ -884,6 +884,31 @@
     line-height: 1.5;
   }
   .gift-info-bar svg { flex-shrink: 0; }
+
+  /* ── 접기/펼치기 섹션 헤더 ── */
+  .section-toggle {
+    grid-column: 1 / -1;
+    background: var(--bg-sub);
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    border-left: none;
+  }
+  .section-toggle:hover { background: var(--border); }
+  .section-toggle .toggle-arrow {
+    font-size: 10px;
+    transition: transform 0.2s;
+  }
+  .section-toggle.collapsed .toggle-arrow { transform: rotate(-90deg); }
+  .cost-item.section-hidden { display: none; }
+
 </style>
 </head>
 <body>
@@ -1492,8 +1517,11 @@ function renderCalc(name, price) {
 
     const group = f.group || '';
     let divider = '';
+    if ((group === 'ingredient' || group === 'butter') && lastGroup !== 'ingredient' && lastGroup !== 'butter') {
+      divider = `<div class="section-toggle" id="toggle-ingredient" onclick="toggleSection('ingredient')" style="grid-column:1/-1;">🧂 재료비 <span class="toggle-arrow">▼</span></div>`;
+    }
     if (group === 'packaging' && lastGroup !== 'packaging') {
-      divider = `<div class="cost-item group-packaging-first" style="grid-column:1/-1;background:var(--bg-sub);padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);pointer-events:none;">📦 포장재</div>`;
+      divider = `<div class="section-toggle" id="toggle-packaging" onclick="toggleSection('packaging')" style="grid-column:1/-1;">📦 포장재 <span class="toggle-arrow">▼</span></div>`;
     }
     if (group) lastGroup = group;
 
@@ -1818,6 +1846,20 @@ function refreshAllGrids() {
       selectedEl = restored;
     }
   }
+}
+
+// ── 섹션 접기/펼치기 ──
+function toggleSection(group) {
+  const toggle = document.getElementById('toggle-' + group);
+  if (!toggle) return;
+  const isCollapsed = toggle.classList.toggle('collapsed');
+  // group-ingredient covers both 'ingredient' and 'butter' groups
+  const selector = group === 'ingredient'
+    ? '.group-ingredient, .group-butter'
+    : '.group-' + group;
+  document.querySelectorAll(selector).forEach(el => {
+    el.classList.toggle('section-hidden', isCollapsed);
+  });
 }
 </script>
 </body>
